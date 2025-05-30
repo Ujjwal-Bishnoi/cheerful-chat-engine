@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Sparkles, Filter, SortDesc } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +59,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
   };
 
   // Update candidates when search results change
-  useState(() => {
+  useEffect(() => {
     if (searchResults) {
       setCandidates(searchResults);
     }
