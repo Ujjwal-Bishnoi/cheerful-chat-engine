@@ -9,7 +9,335 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      candidate_skills: {
+        Row: {
+          candidate_id: string | null
+          id: string
+          proficiency_level: number | null
+          skill_id: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          candidate_id?: string | null
+          id?: string
+          proficiency_level?: number | null
+          skill_id?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          candidate_id?: string | null
+          id?: string
+          proficiency_level?: number | null
+          skill_id?: string | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_skills_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidates: {
+        Row: {
+          availability:
+            | Database["public"]["Enums"]["availability_status"]
+            | null
+          created_at: string
+          email: string
+          experience_years: number | null
+          github_url: string | null
+          id: string
+          linkedin_url: string | null
+          location: string | null
+          name: string
+          portfolio_url: string | null
+          status: Database["public"]["Enums"]["candidate_status"] | null
+          summary: string | null
+          title: string
+          updated_at: string
+          verification_score: number | null
+          verified: boolean | null
+        }
+        Insert: {
+          availability?:
+            | Database["public"]["Enums"]["availability_status"]
+            | null
+          created_at?: string
+          email: string
+          experience_years?: number | null
+          github_url?: string | null
+          id?: string
+          linkedin_url?: string | null
+          location?: string | null
+          name: string
+          portfolio_url?: string | null
+          status?: Database["public"]["Enums"]["candidate_status"] | null
+          summary?: string | null
+          title: string
+          updated_at?: string
+          verification_score?: number | null
+          verified?: boolean | null
+        }
+        Update: {
+          availability?:
+            | Database["public"]["Enums"]["availability_status"]
+            | null
+          created_at?: string
+          email?: string
+          experience_years?: number | null
+          github_url?: string | null
+          id?: string
+          linkedin_url?: string | null
+          location?: string | null
+          name?: string
+          portfolio_url?: string | null
+          status?: Database["public"]["Enums"]["candidate_status"] | null
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          verification_score?: number | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
+      outreach_campaigns: {
+        Row: {
+          candidate_id: string | null
+          content: string
+          created_at: string
+          id: string
+          responded_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["outreach_status"] | null
+          subject: string
+          template_id: string | null
+        }
+        Insert: {
+          candidate_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          responded_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["outreach_status"] | null
+          subject: string
+          template_id?: string | null
+        }
+        Update: {
+          candidate_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          responded_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["outreach_status"] | null
+          subject?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_campaigns_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outreach_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "outreach_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outreach_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string
+          template_type: string | null
+          updated_at: string
+          usage_count: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject: string
+          template_type?: string | null
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string
+          template_type?: string | null
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
+      resumes: {
+        Row: {
+          candidate_id: string | null
+          content_text: string | null
+          file_size: number | null
+          filename: string
+          id: string
+          parsed_data: Json | null
+          parsing_confidence: number | null
+          parsing_flags: string[] | null
+          uploaded_at: string
+        }
+        Insert: {
+          candidate_id?: string | null
+          content_text?: string | null
+          file_size?: number | null
+          filename: string
+          id?: string
+          parsed_data?: Json | null
+          parsing_confidence?: number | null
+          parsing_flags?: string[] | null
+          uploaded_at?: string
+        }
+        Update: {
+          candidate_id?: string | null
+          content_text?: string | null
+          file_size?: number | null
+          filename?: string
+          id?: string
+          parsed_data?: Json | null
+          parsing_confidence?: number | null
+          parsing_flags?: string[] | null
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resumes_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      search_queries: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          filters: Json | null
+          id: string
+          query_text: string
+          result_count: number | null
+          status: Database["public"]["Enums"]["search_status"] | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          query_text: string
+          result_count?: number | null
+          status?: Database["public"]["Enums"]["search_status"] | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          query_text?: string
+          result_count?: number | null
+          status?: Database["public"]["Enums"]["search_status"] | null
+        }
+        Relationships: []
+      }
+      search_results: {
+        Row: {
+          anonymized: boolean | null
+          candidate_id: string | null
+          created_at: string
+          id: string
+          ranking_position: number | null
+          relevance_score: number | null
+          search_query_id: string | null
+        }
+        Insert: {
+          anonymized?: boolean | null
+          candidate_id?: string | null
+          created_at?: string
+          id?: string
+          ranking_position?: number | null
+          relevance_score?: number | null
+          search_query_id?: string | null
+        }
+        Update: {
+          anonymized?: boolean | null
+          candidate_id?: string | null
+          created_at?: string
+          id?: string
+          ranking_position?: number | null
+          relevance_score?: number | null
+          search_query_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_results_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "search_results_search_query_id_fkey"
+            columns: ["search_query_id"]
+            isOneToOne: false
+            referencedRelation: "search_queries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +346,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      availability_status:
+        | "actively_looking"
+        | "open_to_offers"
+        | "contract_only"
+        | "not_available"
+      candidate_status: "active" | "inactive" | "hired" | "withdrawn"
+      outreach_status: "draft" | "sent" | "responded" | "no_response"
+      search_status: "in_progress" | "completed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +468,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      availability_status: [
+        "actively_looking",
+        "open_to_offers",
+        "contract_only",
+        "not_available",
+      ],
+      candidate_status: ["active", "inactive", "hired", "withdrawn"],
+      outreach_status: ["draft", "sent", "responded", "no_response"],
+      search_status: ["in_progress", "completed", "failed"],
+    },
   },
 } as const

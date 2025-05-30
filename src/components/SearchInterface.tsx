@@ -7,6 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCreateSearchQuery, useSearchQueries } from "@/hooks/useSearchQueries";
+import { useSearchResults } from "@/hooks/useSearchResults";
+import { useToast } from "@/hooks/use-toast";
 
 interface SearchInterfaceProps {
   candidates: any[];
@@ -15,7 +18,7 @@ interface SearchInterfaceProps {
 
 const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) => {
   const [query, setQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const [currentSearchId, setCurrentSearchId] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     experience: [0, 15],
     location: "",
@@ -23,62 +26,47 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
     availability: ""
   });
 
-  // Mock search function
+  const { toast } = useToast();
+  const createSearchQuery = useCreateSearchQuery();
+  const { data: searchQueries } = useSearchQueries();
+  const { data: searchResults, isLoading: isSearching } = useSearchResults(currentSearchId || undefined);
+
+  // Handle search function
   const handleSearch = async () => {
     if (!query.trim()) return;
     
-    setIsSearching(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const mockCandidates = [
-        {
-          id: 1,
-          name: "Alex Chen",
-          title: "Senior ML Engineer",
-          experience: "5 years",
-          location: "San Francisco, CA",
-          skills: ["RAG", "PyTorch", "LangChain", "Vector Databases"],
-          score: 95,
-          summary: "Expert in retrieval-augmented generation with production RAG systems experience",
-          availability: "Open to offers",
-          email: "alex.chen@email.com",
-          anonymized: true
-        },
-        {
-          id: 2,
-          name: "Sarah Rodriguez",
-          title: "AI Research Scientist",
-          experience: "7 years",
-          location: "Berlin, Germany",
-          skills: ["Transformers", "RLHF", "MLOps", "Distributed Training"],
-          score: 92,
-          summary: "PhD in NLP with expertise in large language model training and alignment",
-          availability: "Contract only",
-          email: "s.rodriguez@research.eu",
-          anonymized: true
-        },
-        {
-          id: 3,
-          name: "Marcus Johnson",
-          title: "AI Engineering Lead",
-          experience: "8 years",
-          location: "London, UK",
-          skills: ["LLM Fine-tuning", "Inference Optimization", "Team Leadership"],
-          score: 88,
-          summary: "Led AI teams building production LLM applications at scale",
-          availability: "Actively looking",
-          email: "marcus.j@techcorp.com",
-          anonymized: true
-        }
-      ];
+    try {
+      const searchQuery = await createSearchQuery.mutateAsync(query);
+      setCurrentSearchId(searchQuery.id);
       
-      setCandidates(mockCandidates);
-      setIsSearching(false);
-    }, 2000);
+      // Simulate completing the search after a delay
+      setTimeout(async () => {
+        // In a real implementation, this would trigger the AI search
+        // For now, we'll just mark it as completed
+        setCandidates(searchResults || []);
+        
+        toast({
+          title: "Search completed",
+          description: `Found ${searchResults?.length || 0} candidates matching your query`,
+        });
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Search failed",
+        description: "There was an error processing your search query",
+        variant: "destructive"
+      });
+    }
   };
 
-  const suggestedQueries = [
+  // Update candidates when search results change
+  useState(() => {
+    if (searchResults) {
+      setCandidates(searchResults);
+    }
+  }, [searchResults, setCandidates]);
+
+  const suggestedQueries = searchQueries?.slice(0, 4).map(sq => sq.query_text) || [
     "Find senior RAG engineers in EU open to contracts",
     "ML engineers with PyTorch experience in Bay Area",
     "AI researchers with NLP background, remote-friendly",
@@ -120,10 +108,10 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
             />
             <Button 
               onClick={handleSearch} 
-              disabled={isSearching || !query.trim()}
+              disabled={isSearching || !query.trim() || createSearchQuery.isPending}
               className="px-8 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              {isSearching ? (
+              {isSearching || createSearchQuery.isPending ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Searching...</span>
@@ -247,7 +235,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        {candidate.anonymized ? "Candidate" : candidate.name} #{candidate.id}
+                        {candidate.anonymized ? "Candidate" : candidate.name} #{candidate.id.slice(-6)}
                       </h3>
                       <p className="text-blue-600 font-medium">{candidate.title}</p>
                       <p className="text-gray-600">{candidate.experience} • {candidate.location}</p>
@@ -271,7 +259,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
                   <p className="text-gray-700 mb-4">{candidate.summary}</p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {candidate.skills.map((skill: string, index: number) => (
+                    {candidate.skills?.map((skill: string, index: number) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {skill}
                       </Badge>
