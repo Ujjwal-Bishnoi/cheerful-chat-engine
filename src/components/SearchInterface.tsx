@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Search, Sparkles, Filter, SortDesc } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -78,7 +79,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-4 flex items-center justify-center space-x-2">
           <Sparkles className="w-8 h-8 text-purple-600" />
-          <span>PeopleGPT Search</span>
+          <span>HireGPT Search</span>
         </h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Describe the perfect candidate in natural language. Our AI understands context, skills, and requirements.
@@ -90,7 +91,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Search className="w-5 h-5" />
-            <span>Natural Language Search</span>
+            <span>Search</span>
           </CardTitle>
           <CardDescription>
             Describe your ideal candidate as you would to a colleague

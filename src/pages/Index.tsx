@@ -1,18 +1,49 @@
 
-import { useState } from "react";
-import { Upload, Search, Users, MessageSquare, Zap, Shield, Target } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Upload, Users, MessageSquare, Zap, Shield, Target, LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import SearchInterface from "@/components/SearchInterface";
 import ResumeUpload from "@/components/ResumeUpload";
 import CandidateResults from "@/components/CandidateResults";
 import OutreachTemplates from "@/components/OutreachTemplates";
+import AuthPage from "@/components/AuthPage";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("search");
+  const [activeTab, setActiveTab] = useState("home");
   const [candidates, setCandidates] = useState([]);
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect to auth page if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading or auth page if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -25,49 +56,66 @@ const Index = () => {
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI Hiring Copilot
+                Hire AI
               </h1>
             </div>
-            <nav className="flex space-x-6">
-              <Button
-                variant={activeTab === "search" ? "default" : "ghost"}
-                onClick={() => setActiveTab("search")}
-                className="flex items-center space-x-2"
-              >
-                <Search className="w-4 h-4" />
-                <span>Search</span>
-              </Button>
-              <Button
-                variant={activeTab === "upload" ? "default" : "ghost"}
-                onClick={() => setActiveTab("upload")}
-                className="flex items-center space-x-2"
-              >
-                <Upload className="w-4 h-4" />
-                <span>Upload</span>
-              </Button>
-              <Button
-                variant={activeTab === "candidates" ? "default" : "ghost"}
-                onClick={() => setActiveTab("candidates")}
-                className="flex items-center space-x-2"
-              >
-                <Users className="w-4 h-4" />
-                <span>Candidates</span>
-              </Button>
-              <Button
-                variant={activeTab === "outreach" ? "default" : "ghost"}
-                onClick={() => setActiveTab("outreach")}
-                className="flex items-center space-x-2"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>Outreach</span>
-              </Button>
-            </nav>
+            <div className="flex items-center space-x-4">
+              <nav className="flex space-x-6">
+                <Button
+                  variant={activeTab === "home" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("home")}
+                  className="flex items-center space-x-2"
+                >
+                  <Home className="w-4 h-4" />
+                  <span>Home</span>
+                </Button>
+                <Button
+                  variant={activeTab === "upload" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("upload")}
+                  className="flex items-center space-x-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Upload</span>
+                </Button>
+                <Button
+                  variant={activeTab === "candidates" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("candidates")}
+                  className="flex items-center space-x-2"
+                >
+                  <Users className="w-4 h-4" />
+                  <span>Candidates</span>
+                </Button>
+                <Button
+                  variant={activeTab === "outreach" ? "default" : "ghost"}
+                  onClick={() => setActiveTab("outreach")}
+                  className="flex items-center space-x-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Outreach</span>
+                </Button>
+              </nav>
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <User className="w-4 h-4" />
+                  <span>{user.email}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="flex items-center space-x-1"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Hero Section - Only show when no specific tab is active */}
-      {activeTab === "search" && candidates.length === 0 && (
+      {activeTab === "home" && candidates.length === 0 && (
         <section className="py-20 px-4">
           <div className="container mx-auto text-center">
             <div className="max-w-4xl mx-auto">
@@ -100,9 +148,9 @@ const Index = () => {
                 <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                   <CardHeader>
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                      <Search className="w-6 h-6 text-blue-600" />
+                      <Home className="w-6 h-6 text-blue-600" />
                     </div>
-                    <CardTitle className="text-center">Natural Language Search</CardTitle>
+                    <CardTitle className="text-center">HireGPT Search</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-center">
@@ -146,7 +194,7 @@ const Index = () => {
 
       {/* Main Content Area */}
       <main className="container mx-auto px-4 py-8">
-        {activeTab === "search" && (
+        {activeTab === "home" && (
           <SearchInterface candidates={candidates} setCandidates={setCandidates} />
         )}
         {activeTab === "upload" && <ResumeUpload />}
@@ -163,7 +211,7 @@ const Index = () => {
                 <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-400 rounded-md flex items-center justify-center">
                   <Zap className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-semibold">AI Hiring Copilot</span>
+                <span className="text-lg font-semibold">Hire AI</span>
               </div>
               <p className="text-gray-400">
                 Revolutionizing AI talent acquisition with smart automation and bias-aware screening.
@@ -172,7 +220,7 @@ const Index = () => {
             <div>
               <h3 className="font-semibold mb-4">Features</h3>
               <ul className="space-y-2 text-gray-400">
-                <li>Natural Language Search</li>
+                <li>HireGPT Search</li>
                 <li>Resume Parsing</li>
                 <li>Candidate Ranking</li>
                 <li>Outreach Templates</li>
@@ -198,7 +246,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 AI Hiring Copilot. Built for the future of AI talent acquisition.</p>
+            <p>&copy; 2024 Hire AI. Built for the future of AI talent acquisition.</p>
           </div>
         </div>
       </footer>
