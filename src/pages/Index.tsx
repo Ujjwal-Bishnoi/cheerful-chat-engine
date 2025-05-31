@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Upload, Users, MessageSquare, Zap, Shield, Target, LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -240,7 +239,7 @@ const Index = () => {
             <div>
               <h3 className="font-semibold mb-4">Contact</h3>
               <p className="text-gray-400">
-                Email: <a href="mailto:contact@hire-ai.com" className="text-blue-400 hover:text-blue-300">contact@hire-ai.com</a>
+                Email: <a href="mailto:creativity.work24@gmail.com" className="text-blue-400 hover:text-blue-300">creativity.work24@gmail.com</a>
               </p>
             </div>
           </div>

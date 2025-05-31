@@ -13,7 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 const EnhancedResumeUpload = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [editingData, setEditingData] = useState<any>(null);
-  const { parseResume, isProcessing, parsedData, setParsedData } = useResumeParserFallback();
+  const [isSaving, setIsSaving] = useState(false);
+  const { parseResume, isProcessing, parsedData, setParsedData, saveToDatabase } = useResumeParserFallback();
   const { uploadFile, isUploading } = useFileUpload();
   const { toast } = useToast();
 
@@ -79,6 +80,38 @@ const EnhancedResumeUpload = () => {
 
   const updateField = (field: string, value: any) => {
     setEditingData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveToDatabase = async () => {
+    if (!parsedData) return;
+    
+    setIsSaving(true);
+    try {
+      await saveToDatabase();
+    } catch (error) {
+      console.error('Error saving to database:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCreateProfile = async () => {
+    if (!parsedData) return;
+    
+    setIsSaving(true);
+    try {
+      const candidate = await saveToDatabase();
+      if (candidate) {
+        toast({
+          title: "Profile created successfully",
+          description: `Candidate profile for ${parsedData.name} is now available in the Candidates tab`,
+        });
+      }
+    } catch (error) {
+      console.error('Error creating profile:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const currentData = editingData || parsedData;
@@ -298,11 +331,20 @@ const EnhancedResumeUpload = () => {
 
             {/* Action Buttons */}
             <div className="flex space-x-3 pt-4 border-t">
-              <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
-                Save to Database
+              <Button 
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                onClick={handleSaveToDatabase}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : 'Save to Database'}
               </Button>
-              <Button variant="outline" className="flex-1">
-                Create Profile
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={handleCreateProfile}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Creating...' : 'Create Profile'}
               </Button>
             </div>
           </CardContent>

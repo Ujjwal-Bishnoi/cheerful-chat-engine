@@ -1,1 +1,8 @@
+
 project_id = "ocmqqtgcadltakzuwixd"
+
+[functions.parse-resume]
+verify_jwt = false
+
+[functions.search-candidates]
+verify_jwt = false
