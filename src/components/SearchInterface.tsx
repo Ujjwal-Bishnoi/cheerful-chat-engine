@@ -1,12 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { Search, Sparkles, Filter, SortDesc } from "lucide-react";
+import { Search, Sparkles, SortDesc } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateSearchQuery, useSearchQueries } from "@/hooks/useSearchQueries";
 import { useSearchResults } from "@/hooks/useSearchResults";
 import { useToast } from "@/hooks/use-toast";
@@ -19,12 +17,6 @@ interface SearchInterfaceProps {
 const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) => {
   const [query, setQuery] = useState("");
   const [currentSearchId, setCurrentSearchId] = useState<string | null>(null);
-  const [filters, setFilters] = useState({
-    experience: [0, 15],
-    location: "",
-    skills: "",
-    availability: ""
-  });
 
   const { toast } = useToast();
   const createSearchQuery = useCreateSearchQuery();
@@ -139,74 +131,6 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
                   {suggestion}
                 </Badge>
               ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Advanced Filters */}
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Filter className="w-5 h-5" />
-            <span>Advanced Filters</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Experience (years)</label>
-              <Slider
-                value={filters.experience}
-                onValueChange={(value) => setFilters({...filters, experience: value})}
-                max={15}
-                step={1}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>{filters.experience[0]} years</span>
-                <span>{filters.experience[1]} years</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Location</label>
-              <Select value={filters.location} onValueChange={(value) => setFilters({...filters, location: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any location</SelectItem>
-                  <SelectItem value="us">United States</SelectItem>
-                  <SelectItem value="eu">Europe</SelectItem>
-                  <SelectItem value="uk">United Kingdom</SelectItem>
-                  <SelectItem value="remote">Remote only</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Key Skills</label>
-              <Input
-                placeholder="e.g., RAG, PyTorch, LLM"
-                value={filters.skills}
-                onChange={(e) => setFilters({...filters, skills: e.target.value})}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Availability</label>
-              <Select value={filters.availability} onValueChange={(value) => setFilters({...filters, availability: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="active">Actively looking</SelectItem>
-                  <SelectItem value="open">Open to offers</SelectItem>
-                  <SelectItem value="contract">Contract only</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </CardContent>

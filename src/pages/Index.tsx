@@ -213,8 +213,11 @@ const Index = () => {
                 </div>
                 <span className="text-lg font-semibold">Hire AI</span>
               </div>
-              <p className="text-gray-400">
+              <p className="text-gray-400 mb-4">
                 Revolutionizing AI talent acquisition with smart automation and bias-aware screening.
+              </p>
+              <p className="text-gray-400 text-sm">
+                Contact us at <a href="mailto:creativity.work24@gmail.com" className="text-blue-400 hover:text-blue-300">creativity.work24@gmail.com</a>
               </p>
             </div>
             <div>
@@ -246,7 +249,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Hire AI. Built for the future of AI talent acquisition.</p>
+            <p>&copy; 2025 Hire AI. Built for the future of AI talent acquisition.</p>
           </div>
         </div>
       </footer>

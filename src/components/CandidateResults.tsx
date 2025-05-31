@@ -4,9 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Filter, Download, Mail, Eye, TrendingUp } from "lucide-react";
+import { Users, Filter, Mail, Eye, TrendingUp } from "lucide-react";
 import { useCandidates } from "@/hooks/useCandidates";
 import { useState } from "react";
+import CandidateProfile from "./CandidateProfile";
 
 interface CandidateResultsProps {
   candidates: any[];
@@ -16,6 +17,7 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
   const { data: allCandidates = [], isLoading } = useCandidates();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   // Use search candidates if available, otherwise show all candidates
   const displayCandidates = searchCandidates.length > 0 ? searchCandidates : allCandidates;
@@ -30,11 +32,25 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
     return matchesSearch && matchesStatus;
   });
 
+  const formatAvailability = (availability: string) => {
+    return availability?.replace('_', ' ').replace('to_', 'to ') || '';
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
+    );
+  }
+
+  // Show candidate profile if one is selected
+  if (selectedCandidate) {
+    return (
+      <CandidateProfile 
+        candidate={selectedCandidate} 
+        onBack={() => setSelectedCandidate(null)}
+      />
     );
   }
 
@@ -123,7 +139,7 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               placeholder="Search candidates, skills, titles..."
               value={searchTerm}
@@ -141,10 +157,6 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
                 <SelectItem value="not_available">Not Available</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="flex items-center space-x-2">
-              <Download className="w-4 h-4" />
-              <span>Export CSV</span>
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -187,7 +199,7 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
                         'border-gray-500 text-gray-700'
                       }`}
                     >
-                      {candidate.availability?.replace('_', ' ')}
+                      {formatAvailability(candidate.availability)}
                     </Badge>
                   </div>
                 </div>
@@ -212,7 +224,11 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
                     <span className="font-medium">Contact:</span> {candidate.email}
                   </div>
                   <div className="space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setSelectedCandidate(candidate)}
+                    >
                       <Eye className="w-4 h-4 mr-1" />
                       View Profile
                     </Button>
