@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { useResumeParser } from "@/hooks/useResumeParser";
+import { useResumeParserFallback } from "@/hooks/useResumeParserFallback";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import { useToast } from "@/hooks/use-toast";
 
 const EnhancedResumeUpload = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [editingData, setEditingData] = useState<any>(null);
-  const { parseResume, isProcessing, parsedData, setParsedData } = useResumeParser();
+  const { parseResume, isProcessing, parsedData, setParsedData } = useResumeParserFallback();
+  const { uploadFile, isUploading } = useFileUpload();
   const { toast } = useToast();
 
   const handleDrop = async (e: React.DragEvent) => {
@@ -20,34 +22,41 @@ const EnhancedResumeUpload = () => {
     setIsDragOver(false);
     
     const files = Array.from(e.dataTransfer.files);
-    const pdfFiles = files.filter(file => 
-      file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
-    );
     
-    if (pdfFiles.length === 0) {
+    if (files.length === 0) {
       toast({
-        title: "Invalid file type",
-        description: "Please upload PDF files only",
+        title: "No files detected",
+        description: "Please drop a PDF or DOC file",
         variant: "destructive"
       });
       return;
     }
 
-    if (pdfFiles.length > 1) {
+    if (files.length > 1) {
       toast({
-        title: "Multiple files",
+        title: "Multiple files detected",
         description: "Please upload one resume at a time",
         variant: "destructive"
       });
       return;
     }
 
-    await parseResume(pdfFiles[0]);
+    try {
+      const validatedFile = await uploadFile(files[0]);
+      await parseResume(validatedFile);
+    } catch (error) {
+      console.error('File upload error:', error);
+    }
   };
 
   const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      await parseResume(e.target.files[0]);
+      try {
+        const validatedFile = await uploadFile(e.target.files[0]);
+        await parseResume(validatedFile);
+      } catch (error) {
+        console.error('File input error:', error);
+      }
     }
   };
 
@@ -60,7 +69,7 @@ const EnhancedResumeUpload = () => {
     setEditingData(null);
     toast({
       title: "Changes saved",
-      description: "Resume data has been updated",
+      description: "Resume data has been updated successfully",
     });
   };
 
@@ -72,6 +81,9 @@ const EnhancedResumeUpload = () => {
     setEditingData(prev => ({ ...prev, [field]: value }));
   };
 
+  const currentData = editingData || parsedData;
+  const isCurrentlyProcessing = isProcessing || isUploading;
+
   return (
     <div className="space-y-6">
       {/* Upload Area */}
@@ -79,42 +91,42 @@ const EnhancedResumeUpload = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Upload className="w-5 h-5" />
-            <span>AI-Powered Resume Parser</span>
+            <span>Resume Upload & Parser</span>
           </CardTitle>
           <CardDescription>
-            Upload a PDF resume and our AI will extract structured candidate information
+            Upload PDF or DOC resumes and extract structured candidate information
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div
             className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${
               isDragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'
-            }`}
+            } ${isCurrentlyProcessing ? 'opacity-50 pointer-events-none' : ''}`}
             onDrop={handleDrop}
             onDragOver={(e) => {
               e.preventDefault();
               setIsDragOver(true);
             }}
             onDragLeave={() => setIsDragOver(false)}
-            onClick={() => document.getElementById('resume-file-input')?.click()}
+            onClick={() => !isCurrentlyProcessing && document.getElementById('resume-file-input')?.click()}
           >
             <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              {isProcessing ? 'Processing resume...' : 'Drop your resume PDF here'}
+              {isCurrentlyProcessing ? 'Processing resume...' : 'Drop your resume here'}
             </h3>
             <p className="text-gray-500 mb-4">
-              or click to browse files
+              Supports PDF, DOC, and DOCX files (max 10MB)
             </p>
-            <Button variant="outline" disabled={isProcessing}>
-              {isProcessing ? 'Processing...' : 'Select PDF File'}
+            <Button variant="outline" disabled={isCurrentlyProcessing}>
+              {isCurrentlyProcessing ? 'Processing...' : 'Select File'}
             </Button>
             <input
               id="resume-file-input"
               type="file"
-              accept=".pdf"
+              accept=".pdf,.doc,.docx"
               className="hidden"
               onChange={handleFileInput}
-              disabled={isProcessing}
+              disabled={isCurrentlyProcessing}
             />
           </div>
         </CardContent>
@@ -159,31 +171,35 @@ const EnhancedResumeUpload = () => {
                   <Input 
                     value={editingData.name || ''} 
                     onChange={(e) => updateField('name', e.target.value)}
+                    placeholder="Enter candidate name"
                   />
                 ) : (
-                  <p className="text-lg font-semibold">{parsedData.name}</p>
+                  <p className="text-lg font-semibold">{currentData.name}</p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Email</label>
                 {editingData ? (
                   <Input 
+                    type="email"
                     value={editingData.email || ''} 
                     onChange={(e) => updateField('email', e.target.value)}
+                    placeholder="Enter email address"
                   />
                 ) : (
-                  <p className="text-gray-700">{parsedData.email}</p>
+                  <p className="text-gray-700">{currentData.email || 'Not provided'}</p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
+                <label className="block text-sm font-medium mb-1">Job Title</label>
                 {editingData ? (
                   <Input 
                     value={editingData.title || ''} 
                     onChange={(e) => updateField('title', e.target.value)}
+                    placeholder="Enter job title"
                   />
                 ) : (
-                  <p className="text-gray-700">{parsedData.title}</p>
+                  <p className="text-gray-700">{currentData.title}</p>
                 )}
               </div>
               <div>
@@ -192,50 +208,72 @@ const EnhancedResumeUpload = () => {
                   <Input 
                     value={editingData.location || ''} 
                     onChange={(e) => updateField('location', e.target.value)}
+                    placeholder="Enter location"
                   />
                 ) : (
-                  <p className="text-gray-700">{parsedData.location}</p>
+                  <p className="text-gray-700">{currentData.location}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Years of Experience</label>
+                {editingData ? (
+                  <Input 
+                    type="number"
+                    value={editingData.experience_years || 0} 
+                    onChange={(e) => updateField('experience_years', parseInt(e.target.value) || 0)}
+                    placeholder="Enter years of experience"
+                  />
+                ) : (
+                  <p className="text-gray-700">{currentData.experience_years} years</p>
                 )}
               </div>
             </div>
 
             {/* Summary */}
             <div>
-              <label className="block text-sm font-medium mb-1">Summary</label>
+              <label className="block text-sm font-medium mb-1">Professional Summary</label>
               {editingData ? (
                 <Textarea 
                   value={editingData.summary || ''} 
                   onChange={(e) => updateField('summary', e.target.value)}
-                  rows={3}
+                  rows={4}
+                  placeholder="Enter professional summary"
                 />
               ) : (
-                <p className="text-gray-700">{parsedData.summary}</p>
+                <p className="text-gray-700 bg-gray-50 p-4 rounded-lg">{currentData.summary}</p>
               )}
             </div>
 
             {/* Skills */}
             <div>
               <label className="block text-sm font-medium mb-2">Skills</label>
-              <div className="flex flex-wrap gap-2">
-                {(editingData ? editingData.skills : parsedData.skills)?.map((skill: string, index: number) => (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {currentData.skills?.map((skill: string, index: number) => (
                   <Badge key={index} variant="secondary">
                     {skill}
                   </Badge>
                 ))}
               </div>
+              {editingData && (
+                <Input 
+                  placeholder="Add skills separated by commas"
+                  value={editingData.skills?.join(', ') || ''}
+                  onChange={(e) => updateField('skills', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
+                />
+              )}
             </div>
 
             {/* Work Experience */}
-            {parsedData.work_experience && parsedData.work_experience.length > 0 && (
+            {currentData.work_experience && currentData.work_experience.length > 0 && (
               <div>
                 <label className="block text-sm font-medium mb-2">Work Experience</label>
                 <div className="space-y-3">
-                  {parsedData.work_experience.map((exp: any, index: number) => (
-                    <div key={index} className="border rounded-lg p-3 bg-gray-50">
-                      <h4 className="font-medium">{exp.role} at {exp.company}</h4>
-                      <p className="text-sm text-gray-600">{exp.duration}</p>
+                  {currentData.work_experience.map((exp: any, index: number) => (
+                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                      <h4 className="font-medium text-blue-600">{exp.role} at {exp.company}</h4>
+                      <p className="text-sm text-gray-600 mb-2">{exp.duration}</p>
                       {exp.description && (
-                        <p className="text-sm mt-1">{exp.description}</p>
+                        <p className="text-sm text-gray-700">{exp.description}</p>
                       )}
                     </div>
                   ))}
@@ -244,11 +282,11 @@ const EnhancedResumeUpload = () => {
             )}
 
             {/* Education */}
-            {parsedData.education && parsedData.education.length > 0 && (
+            {currentData.education && currentData.education.length > 0 && (
               <div>
                 <label className="block text-sm font-medium mb-2">Education</label>
                 <div className="space-y-2">
-                  {parsedData.education.map((edu: any, index: number) => (
+                  {currentData.education.map((edu: any, index: number) => (
                     <div key={index} className="border rounded-lg p-3 bg-gray-50">
                       <h4 className="font-medium">{edu.degree} in {edu.field}</h4>
                       <p className="text-sm text-gray-600">{edu.institution} - {edu.year}</p>
@@ -257,6 +295,16 @@ const EnhancedResumeUpload = () => {
                 </div>
               </div>
             )}
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3 pt-4 border-t">
+              <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+                Save to Database
+              </Button>
+              <Button variant="outline" className="flex-1">
+                Create Profile
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

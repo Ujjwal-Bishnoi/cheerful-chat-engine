@@ -72,7 +72,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Search className="w-5 h-5" />
-            <span>Natural Language Search</span>
+            <span>Search</span>
           </CardTitle>
           <CardDescription>
             Ask questions like "Find React developers with 5+ years experience in startups"

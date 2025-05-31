@@ -68,7 +68,7 @@ const Index = () => {
                   className="flex items-center space-x-2"
                 >
                   <Home className="w-4 h-4" />
-                  <span>Search</span>
+                  <span>Home</span>
                 </Button>
                 <Button
                   variant={activeTab === "upload" ? "default" : "ghost"}
@@ -166,7 +166,7 @@ const Index = () => {
                     <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-4 mx-auto">
                       <Shield className="w-6 h-6 text-purple-600" />
                     </div>
-                    <CardTitle className="text-center">NLP Search</CardTitle>
+                    <CardTitle className="text-center">AI Search</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-center dark:text-gray-300">
