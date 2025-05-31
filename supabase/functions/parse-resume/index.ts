@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -25,7 +24,7 @@ serve(async (req) => {
 
     console.log('Processing resume:', fileName);
 
-    // Download the file content
+    // Download and extract text
     const fileResponse = await fetch(fileUrl);
     if (!fileResponse.ok) {
       throw new Error('Failed to download file');
@@ -34,22 +33,14 @@ serve(async (req) => {
     const fileBuffer = await fileResponse.arrayBuffer();
     const fileText = new TextDecoder().decode(fileBuffer);
     
-    // Extract text content and clean it
-    let extractedText = fileText;
-    
-    // If it looks like a PDF, extract readable content
-    if (fileName.toLowerCase().endsWith('.pdf')) {
-      // Clean PDF text extraction
-      extractedText = fileText
-        .replace(/[^\x20-\x7E\n\r]/g, ' ') // Remove non-printable characters
-        .replace(/\s+/g, ' ') // Normalize whitespace
-        .replace(/obj|endobj|stream|endstream/g, '') // Remove PDF metadata
-        .trim();
-    }
+    // Clean and normalize text
+    let extractedText = fileText
+      .replace(/[^\x20-\x7E\n\r]/g, ' ') // Remove non-printable characters
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/obj|endobj|stream|endstream/g, '') // Remove PDF metadata
+      .trim();
 
-    console.log('Extracted text length:', extractedText.length);
-
-    // Create enhanced prompt for DeepSeek API with better field extraction
+    // Enhanced DeepSeek prompt for field extraction
     const prompt = `You are an intelligent resume parser. Extract the following fields from the resume text, even if the format is non-standard. Use best effort and context.
 
 Return fields in this exact JSON format:
@@ -83,7 +74,7 @@ ${extractedText.slice(0, 4000)}
 
 Return ONLY the JSON object, no other text:`;
 
-    // Call DeepSeek API with enhanced prompt
+    // Call DeepSeek API for parsing
     const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
@@ -120,22 +111,21 @@ Return ONLY the JSON object, no other text:`;
       parsedData = JSON.parse(extractedData);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
-      // Enhanced fallback extraction
       parsedData = {
-        name: extractNameFromText(extractedText) || "Unknown",
+        name: extractNameFromText(extractedText) || fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, ' '),
         email: extractEmailFromText(extractedText) || "",
         phone: extractPhoneFromText(extractedText) || "",
-        location: extractLocationFromText(extractedText) || "",
+        location: extractLocationFromText(extractedText) || "Not specified",
         total_experience: extractExperienceFromText(extractedText) || 0,
         skills: extractSkillsFromText(extractedText) || [],
-        current_role: extractCurrentRoleFromText(extractedText) || "Not specified",
+        current_role: extractCurrentRoleFromText(extractedText) || "Software Developer",
         education: extractEducationFromText(extractedText) || "",
         linkedin: extractLinkedInFromText(extractedText) || "",
         github: extractGitHubFromText(extractedText) || ""
       };
     }
 
-    // Map to our database format
+    // Map to database format with enhanced fields
     const candidateData = {
       name: parsedData.name || "Unknown",
       email: parsedData.email || "",
@@ -144,8 +134,8 @@ Return ONLY the JSON object, no other text:`;
       summary: `${parsedData.current_role || 'Professional'} with ${parsedData.total_experience || 0} years of experience. ${parsedData.education ? 'Education: ' + parsedData.education : ''}`.trim(),
       experience_years: parseInt(parsedData.total_experience) || 0,
       availability: 'open_to_offers',
-      verification_score: 85,
-      verified: true,
+      verification_score: calculateVerificationScore(parsedData),
+      verified: isVerifiedProfile(parsedData),
       work_experience: [{
         company: "Previous Company",
         role: parsedData.current_role || "Professional",
@@ -153,13 +143,15 @@ Return ONLY the JSON object, no other text:`;
         description: `Professional with expertise in: ${parsedData.skills?.join(', ') || 'various technologies'}`
       }],
       education: parsedData.education ? [{
-        institution: parsedData.education,
-        degree: "Degree",
-        field: "Field of Study",
-        year: "Recent"
+        institution: parsedData.education.split(',')[0]?.trim() || "Institution",
+        degree: extractDegreeFromEducation(parsedData.education),
+        field: extractFieldFromEducation(parsedData.education),
+        year: extractYearFromEducation(parsedData.education) || "Recent"
       }] : [],
       certifications: [],
-      languages: ["English"]
+      languages: ["English"],
+      linkedin_url: parsedData.linkedin || null,
+      github_url: parsedData.github || null
     };
 
     // Store in Supabase
@@ -176,25 +168,30 @@ Return ONLY the JSON object, no other text:`;
       throw new Error('Failed to save candidate data');
     }
 
-    // Insert skills
+    // Insert skills with enhanced categorization
     if (parsedData.skills && parsedData.skills.length > 0) {
       for (const skillName of parsedData.skills) {
+        const category = categorizeSkill(skillName);
+        
         // Insert or get skill
         const { data: skill } = await supabase
           .from('skills')
-          .upsert({ name: skillName, category: 'Technical' }, { onConflict: 'name' })
+          .upsert({ 
+            name: skillName, 
+            category: category
+          }, { onConflict: 'name' })
           .select()
           .single();
 
         if (skill) {
-          // Link skill to candidate
+          // Link skill to candidate with proficiency
           await supabase
             .from('candidate_skills')
             .insert({
               candidate_id: candidate.id,
               skill_id: skill.id,
-              proficiency_level: 4,
-              years_experience: 2
+              proficiency_level: estimateSkillProficiency(skillName, extractedText),
+              years_experience: estimateSkillYears(skillName, extractedText, parsedData.total_experience)
             });
         }
       }
@@ -207,9 +204,10 @@ Return ONLY the JSON object, no other text:`;
         candidate_id: candidate.id,
         filename: fileName,
         content_text: extractedText.slice(0, 10000),
-        parsing_confidence: 85,
+        parsing_confidence: calculateParsingConfidence(parsedData),
         parsed_data: parsedData,
-        file_size: fileBuffer.byteLength
+        file_size: fileBuffer.byteLength,
+        parsing_flags: generateParsingFlags(parsedData)
       });
 
     return new Response(JSON.stringify({
@@ -232,7 +230,104 @@ Return ONLY the JSON object, no other text:`;
   }
 });
 
-// Helper functions for fallback extraction
+// Helper functions for enhanced parsing
+function calculateVerificationScore(parsedData: any): number {
+  let score = 60; // Base score
+  if (parsedData.email) score += 10;
+  if (parsedData.phone) score += 5;
+  if (parsedData.linkedin) score += 10;
+  if (parsedData.github) score += 5;
+  if (parsedData.education) score += 5;
+  if (parsedData.skills?.length > 3) score += 5;
+  return Math.min(score, 100);
+}
+
+function isVerifiedProfile(parsedData: any): boolean {
+  return calculateVerificationScore(parsedData) >= 85;
+}
+
+function categorizeSkill(skill: string): string {
+  const categories = {
+    'Programming': ['JavaScript', 'Python', 'Java', 'TypeScript', 'C++', 'Go', 'Rust'],
+    'AI/ML': ['PyTorch', 'TensorFlow', 'RAG', 'LangChain', 'RLHF', 'Machine Learning'],
+    'Web': ['React', 'Angular', 'Vue', 'Node.js', 'HTML', 'CSS'],
+    'Database': ['SQL', 'MongoDB', 'PostgreSQL', 'Redis'],
+    'DevOps': ['Docker', 'Kubernetes', 'AWS', 'CI/CD'],
+    'Mobile': ['React Native', 'Flutter', 'iOS', 'Android']
+  };
+
+  for (const [category, keywords] of Object.entries(categories)) {
+    if (keywords.some(k => skill.toLowerCase().includes(k.toLowerCase()))) {
+      return category;
+    }
+  }
+  return 'Other';
+}
+
+function estimateSkillProficiency(skill: string, text: string): number {
+  const mentions = (text.match(new RegExp(skill, 'gi')) || []).length;
+  const hasLeadMention = text.toLowerCase().includes(`lead ${skill.toLowerCase()}`);
+  const hasSeniorMention = text.toLowerCase().includes(`senior ${skill.toLowerCase()}`);
+  
+  let score = 3; // Base proficiency
+  if (mentions > 3) score++;
+  if (hasLeadMention || hasSeniorMention) score++;
+  return Math.min(score, 5);
+}
+
+function estimateSkillYears(skill: string, text: string, totalExperience: number): number {
+  const yearPattern = new RegExp(`(\\d+)\\s*years?.*?${skill}`, 'i');
+  const match = text.match(yearPattern);
+  if (match) {
+    return Math.min(parseInt(match[1]), totalExperience || 10);
+  }
+  return Math.floor(totalExperience / 2) || 1;
+}
+
+function calculateParsingConfidence(parsedData: any): number {
+  let confidence = 70; // Base confidence
+  const requiredFields = ['name', 'email', 'current_role', 'skills'];
+  const presentFields = requiredFields.filter(f => parsedData[f] && parsedData[f].length > 0);
+  confidence += (presentFields.length / requiredFields.length) * 30;
+  return Math.round(confidence);
+}
+
+function generateParsingFlags(parsedData: any): string[] {
+  const flags = [];
+  if (!parsedData.email) flags.push('missing_email');
+  if (!parsedData.name) flags.push('missing_name');
+  if (!parsedData.skills?.length) flags.push('missing_skills');
+  if (parsedData.skills?.length > 20) flags.push('excessive_skills');
+  return flags;
+}
+
+function extractDegreeFromEducation(education: string): string {
+  const degrees = ['Bachelor', 'Master', 'PhD', 'BSc', 'MSc', 'BA', 'MA'];
+  for (const degree of degrees) {
+    if (education?.toLowerCase().includes(degree.toLowerCase())) {
+      return degree;
+    }
+  }
+  return "Degree";
+}
+
+function extractFieldFromEducation(education: string): string {
+  const fields = ['Computer Science', 'Engineering', 'Information Technology', 'Mathematics'];
+  for (const field of fields) {
+    if (education?.toLowerCase().includes(field.toLowerCase())) {
+      return field;
+    }
+  }
+  return "Field of Study";
+}
+
+function extractYearFromEducation(education: string): string {
+  const yearPattern = /20\d{2}|19\d{2}/;
+  const match = education?.match(yearPattern);
+  return match ? match[0] : "Recent";
+}
+
+// Existing helper functions remain unchanged
 function extractNameFromText(text: string): string | null {
   const lines = text.split('\n').filter(line => line.trim().length > 2);
   const nameCandidate = lines.slice(0, 5).find(line => {
