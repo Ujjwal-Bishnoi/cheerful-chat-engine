@@ -12,6 +12,7 @@ export interface Candidate {
   summary: string;
   availability: string;
   verification_score: number;
+  verified: boolean;
   skills?: string[];
 }
 
