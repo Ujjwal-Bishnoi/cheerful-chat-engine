@@ -53,11 +53,14 @@ export type Database = {
           availability:
             | Database["public"]["Enums"]["availability_status"]
             | null
+          certifications: Json | null
           created_at: string
+          education: Json | null
           email: string
           experience_years: number | null
           github_url: string | null
           id: string
+          languages: Json | null
           linkedin_url: string | null
           location: string | null
           name: string
@@ -68,16 +71,20 @@ export type Database = {
           updated_at: string
           verification_score: number | null
           verified: boolean | null
+          work_experience: Json | null
         }
         Insert: {
           availability?:
             | Database["public"]["Enums"]["availability_status"]
             | null
+          certifications?: Json | null
           created_at?: string
+          education?: Json | null
           email: string
           experience_years?: number | null
           github_url?: string | null
           id?: string
+          languages?: Json | null
           linkedin_url?: string | null
           location?: string | null
           name: string
@@ -88,16 +95,20 @@ export type Database = {
           updated_at?: string
           verification_score?: number | null
           verified?: boolean | null
+          work_experience?: Json | null
         }
         Update: {
           availability?:
             | Database["public"]["Enums"]["availability_status"]
             | null
+          certifications?: Json | null
           created_at?: string
+          education?: Json | null
           email?: string
           experience_years?: number | null
           github_url?: string | null
           id?: string
+          languages?: Json | null
           linkedin_url?: string | null
           location?: string | null
           name?: string
@@ -108,6 +119,7 @@ export type Database = {
           updated_at?: string
           verification_score?: number | null
           verified?: boolean | null
+          work_experience?: Json | null
         }
         Relationships: []
       }
@@ -376,7 +388,98 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
     }
     Enums: {
       availability_status:

@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { Search, Sparkles, SortDesc } from "lucide-react";
+import { Search, Sparkles, SortDesc, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCreateSearchQuery, useSearchQueries } from "@/hooks/useSearchQueries";
-import { useSearchResults } from "@/hooks/useSearchResults";
+import { useNLPSearch } from "@/hooks/useNLPSearch";
 import { useToast } from "@/hooks/use-toast";
 
 interface SearchInterfaceProps {
@@ -16,32 +16,21 @@ interface SearchInterfaceProps {
 
 const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) => {
   const [query, setQuery] = useState("");
-  const [currentSearchId, setCurrentSearchId] = useState<string | null>(null);
-
+  
   const { toast } = useToast();
   const createSearchQuery = useCreateSearchQuery();
   const { data: searchQueries } = useSearchQueries();
-  const { data: searchResults, isLoading: isSearching } = useSearchResults(currentSearchId || undefined);
+  const { searchCandidates, isSearching, searchResults, searchSummary } = useNLPSearch();
 
-  // Handle search function
   const handleSearch = async () => {
     if (!query.trim()) return;
     
     try {
-      const searchQuery = await createSearchQuery.mutateAsync(query);
-      setCurrentSearchId(searchQuery.id);
+      // Store search query
+      await createSearchQuery.mutateAsync(query);
       
-      // Simulate completing the search after a delay
-      setTimeout(async () => {
-        // In a real implementation, this would trigger the AI search
-        // For now, we'll just mark it as completed
-        setCandidates(searchResults || []);
-        
-        toast({
-          title: "Search completed",
-          description: `Found ${searchResults?.length || 0} candidates matching your query`,
-        });
-      }, 2000);
+      // Perform NLP search
+      await searchCandidates(query);
     } catch (error) {
       toast({
         title: "Search failed",
@@ -53,16 +42,16 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
 
   // Update candidates when search results change
   useEffect(() => {
-    if (searchResults) {
+    if (searchResults.length > 0) {
       setCandidates(searchResults);
     }
   }, [searchResults, setCandidates]);
 
   const suggestedQueries = searchQueries?.slice(0, 4).map(sq => sq.query_text) || [
-    "Find senior RAG engineers in EU open to contracts",
-    "ML engineers with PyTorch experience in Bay Area",
-    "AI researchers with NLP background, remote-friendly",
-    "Engineering leads with LLM production experience"
+    "Find senior React developers with 5+ years experience",
+    "Python engineers with machine learning background",
+    "Remote-friendly full-stack developers",
+    "Engineering leads with startup experience"
   ];
 
   return (
@@ -70,8 +59,8 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
       {/* Search Header */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-4 flex items-center justify-center space-x-2">
-          <Sparkles className="w-8 h-8 text-purple-600" />
-          <span>HireGPT Search</span>
+          <Brain className="w-8 h-8 text-purple-600" />
+          <span>AI-Powered Candidate Search</span>
         </h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Describe the perfect candidate in natural language. Our AI understands context, skills, and requirements.
@@ -83,16 +72,16 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Search className="w-5 h-5" />
-            <span>Search</span>
+            <span>Natural Language Search</span>
           </CardTitle>
           <CardDescription>
-            Describe your ideal candidate as you would to a colleague
+            Ask questions like "Find React developers with 5+ years experience in startups"
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex space-x-2">
             <Input
-              placeholder="e.g., Find senior RAG engineers in EU open to contracts..."
+              placeholder="e.g., Find senior Python developers with ML experience who are actively looking..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -100,22 +89,29 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
             />
             <Button 
               onClick={handleSearch} 
-              disabled={isSearching || !query.trim() || createSearchQuery.isPending}
-              className="px-8 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              disabled={isSearching || !query.trim()}
+              className="px-8 py-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
-              {isSearching || createSearchQuery.isPending ? (
+              {isSearching ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Searching...</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Search className="w-4 h-4" />
-                  <span>Search</span>
+                  <Sparkles className="w-4 h-4" />
+                  <span>AI Search</span>
                 </div>
               )}
             </Button>
           </div>
+
+          {/* Search Summary */}
+          {searchSummary && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800">{searchSummary}</p>
+            </div>
+          )}
 
           {/* Suggested Queries */}
           <div className="space-y-2">
@@ -125,7 +121,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
                 <Badge
                   key={index}
                   variant="outline"
-                  className="cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                  className="cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition-colors"
                   onClick={() => setQuery(suggestion)}
                 >
                   {suggestion}
@@ -159,10 +155,10 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">
-                        {candidate.anonymized ? "Candidate" : candidate.name} #{candidate.id.slice(-6)}
+                        {candidate.name}
                       </h3>
                       <p className="text-blue-600 font-medium">{candidate.title}</p>
-                      <p className="text-gray-600">{candidate.experience} • {candidate.location}</p>
+                      <p className="text-gray-600">{candidate.experience_years} years • {candidate.location}</p>
                     </div>
                     <div className="text-right">
                       <div className="flex items-center space-x-2 mb-2">
@@ -175,7 +171,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
                         </Badge>
                       </div>
                       <Badge variant="outline" className="text-xs">
-                        {candidate.availability}
+                        {candidate.availability?.replace('_', ' ')}
                       </Badge>
                     </div>
                   </div>
@@ -192,7 +188,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
 
                   <div className="flex justify-between items-center pt-4 border-t">
                     <p className="text-sm text-gray-600">
-                      Contact: {candidate.anonymized ? "••••••@••••.com" : candidate.email}
+                      Contact: {candidate.email}
                     </p>
                     <div className="space-x-2">
                       <Button variant="outline" size="sm">
