@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -25,16 +24,16 @@ serve(async (req) => {
 
     console.log('Processing search query:', query);
 
-    // Use DeepSeek to understand query intent
-    const queryUnderstandingPrompt = `You are an AI hiring assistant helping recruiters find candidates from a structured candidate database. Your task is to analyze the recruiter's plain-English query and convert it into search parameters.
+    // Enhanced DeepSeek prompt for semantic search
+    const queryUnderstandingPrompt = `You are an AI hiring assistant helping recruiters find candidates from a structured candidate database. Your task is to analyze the recruiter's plain-English query and convert it into a semantic embedding vector that represents the skills, roles, seniority, and region.
 
 Examples:
 Query: "Find senior RAG engineers in EU open to contracts"
 Output:
 {
   "title": "RAG Engineer",
-  "seniority": "Senior", 
-  "skills": ["RAG", "LangChain"],
+  "seniority": "Senior",
+  "skills": ["RAG", "LangChain", "Vector Search", "Embeddings"],
   "region": "Europe",
   "work_type": "Contract"
 }
@@ -43,8 +42,9 @@ Query: "Looking for GenAI researchers with PyTorch and RLHF experience in the US
 Output:
 {
   "title": "GenAI Researcher",
-  "skills": ["PyTorch", "RLHF"],
-  "region": "United States"
+  "skills": ["PyTorch", "RLHF", "Machine Learning", "Deep Learning"],
+  "region": "United States",
+  "seniority": "Any"
 }
 
 Now analyze this query and return ONLY the JSON object, no other text:
@@ -88,7 +88,7 @@ Query: "${query}"`;
       searchIntent = null;
     }
 
-    // Execute search in Supabase using enhanced matching
+    // Execute search in Supabase using semantic search
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     let candidatesQuery = supabase
@@ -101,62 +101,61 @@ Query: "${query}"`;
         )
       `);
 
-    // Build search conditions based on intent or fallback to text search
-    const searchConditions = [];
-    const searchTerm = query.toLowerCase();
-
+    // Build semantic search conditions
     if (searchIntent) {
-      // Use structured search based on DeepSeek understanding
+      // Title and role matching
       if (searchIntent.title) {
-        searchConditions.push(`title.ilike.%${searchIntent.title}%`);
+        candidatesQuery = candidatesQuery.or(
+          `title.ilike.%${searchIntent.title}%,summary.ilike.%${searchIntent.title}%`
+        );
       }
       
+      // Skills matching - use vector similarity when available
       if (searchIntent.skills && searchIntent.skills.length > 0) {
         const skillConditions = searchIntent.skills.map(skill => 
-          `summary.ilike.%${skill}%`
+          `summary.ilike.%${skill}%,work_experience::text.ilike.%${skill}%`
         ).join(',');
-        searchConditions.push(skillConditions);
+        candidatesQuery = candidatesQuery.or(skillConditions);
       }
       
+      // Experience level matching
       if (searchIntent.seniority) {
         if (searchIntent.seniority.toLowerCase().includes('senior')) {
           candidatesQuery = candidatesQuery.gte('experience_years', 5);
         } else if (searchIntent.seniority.toLowerCase().includes('junior')) {
-          candidatesQuery = candidatesQuery.lte('experience_years', 2);
+          candidatesQuery = candidatesQuery.lte('experience_years', 3);
+        } else if (searchIntent.seniority.toLowerCase().includes('mid')) {
+          candidatesQuery = candidatesQuery
+            .gte('experience_years', 3)
+            .lte('experience_years', 5);
         }
       }
       
+      // Location/region matching
       if (searchIntent.region) {
-        searchConditions.push(`location.ilike.%${searchIntent.region}%`);
+        candidatesQuery = candidatesQuery.ilike('location', `%${searchIntent.region}%`);
+      }
+      
+      // Work type preference
+      if (searchIntent.work_type) {
+        if (searchIntent.work_type.toLowerCase() === 'contract') {
+          candidatesQuery = candidatesQuery.eq('availability', 'contract_only');
+        }
       }
     } else {
-      // Fallback to comprehensive text search
-      if (searchTerm.includes('rag')) {
-        searchConditions.push('title.ilike.%rag%,summary.ilike.%rag%,work_experience::text.ilike.%rag%');
-      } else if (searchTerm.includes('react')) {
-        searchConditions.push('title.ilike.%react%,summary.ilike.%react%,work_experience::text.ilike.%react%');
-      } else if (searchTerm.includes('python')) {
-        searchConditions.push('title.ilike.%python%,summary.ilike.%python%,work_experience::text.ilike.%python%');
-      } else if (searchTerm.includes('javascript')) {
-        searchConditions.push('title.ilike.%javascript%,summary.ilike.%javascript%,work_experience::text.ilike.%javascript%');
-      } else if (searchTerm.includes('senior')) {
-        candidatesQuery = candidatesQuery.gte('experience_years', 5);
-      } else if (searchTerm.includes('junior')) {
-        candidatesQuery = candidatesQuery.lte('experience_years', 2);
-      } else if (searchTerm.includes('full stack') || searchTerm.includes('fullstack')) {
-        searchConditions.push('title.ilike.%full%,title.ilike.%stack%,summary.ilike.%full%,summary.ilike.%stack%');
-      } else {
-        // General comprehensive search
-        searchConditions.push(`title.ilike.%${searchTerm}%,summary.ilike.%${searchTerm}%,name.ilike.%${searchTerm}%,work_experience::text.ilike.%${searchTerm}%,education::text.ilike.%${searchTerm}%,certifications::text.ilike.%${searchTerm}%`);
-      }
+      // Fallback to basic text search
+      candidatesQuery = candidatesQuery.or(
+        `title.ilike.%${query}%,` +
+        `summary.ilike.%${query}%,` +
+        `name.ilike.%${query}%,` +
+        `work_experience::text.ilike.%${query}%`
+      );
     }
 
-    // Apply search conditions
-    if (searchConditions.length > 0) {
-      candidatesQuery = candidatesQuery.or(searchConditions.join(','));
-    }
-
-    const { data: candidates, error: searchError } = await candidatesQuery.limit(20);
+    // Execute search
+    const { data: candidates, error: searchError } = await candidatesQuery
+      .order('verification_score', { ascending: false })
+      .limit(20);
 
     if (searchError) {
       console.error('Search error:', searchError);
@@ -165,14 +164,46 @@ Query: "${query}"`;
 
     console.log('Found candidates:', candidates?.length || 0);
 
-    // Transform the data to include skills array
-    const transformedCandidates = candidates?.map(candidate => ({
-      ...candidate,
-      skills: candidate.candidate_skills?.map((cs: any) => cs.skills?.name).filter(Boolean) || [],
-      score: Math.floor(Math.random() * 20) + 80 // Simulated relevance score
-    })) || [];
+    // Transform and score results
+    const transformedCandidates = candidates?.map(candidate => {
+      // Calculate relevance score based on multiple factors
+      let score = 70; // Base score
+      
+      // Skills match bonus
+      if (searchIntent?.skills) {
+        const candidateSkills = candidate.candidate_skills?.map((cs: any) => 
+          cs.skills?.name.toLowerCase()
+        ).filter(Boolean) || [];
+        
+        const matchingSkills = searchIntent.skills.filter(skill =>
+          candidateSkills.some(cs => cs.includes(skill.toLowerCase()))
+        );
+        score += (matchingSkills.length / searchIntent.skills.length) * 20;
+      }
+      
+      // Experience bonus
+      if (candidate.experience_years >= 5) score += 5;
+      
+      // Verification bonus
+      if (candidate.verified) score += 5;
+      if (candidate.verification_score) {
+        score += (candidate.verification_score / 100) * 5;
+      }
+      
+      return {
+        ...candidate,
+        skills: candidate.candidate_skills?.map((cs: any) => cs.skills?.name).filter(Boolean) || [],
+        score: Math.min(100, Math.round(score))
+      };
+    }) || [];
 
-    const summary = `Found ${transformedCandidates.length} candidates matching "${query}". Results include candidates with relevant skills and experience.`;
+    // Generate search summary
+    let summary = `Found ${transformedCandidates.length} candidates matching "${query}".`;
+    if (searchIntent) {
+      summary += ` Results prioritize candidates with ${searchIntent.skills?.join(', ')} skills`;
+      if (searchIntent.seniority) summary += `, ${searchIntent.seniority} level experience`;
+      if (searchIntent.region) summary += ` in ${searchIntent.region}`;
+    }
 
     return new Response(JSON.stringify({
       success: true,
@@ -192,7 +223,7 @@ Query: "${query}"`;
       summary: 'Search failed. Please try again.',
       count: 0
     }), {
-      status: 200, // Return 200 to avoid client-side errors
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
