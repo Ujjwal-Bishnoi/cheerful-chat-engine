@@ -2,12 +2,12 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import SearchInterface from "@/components/SearchInterface";
+import { SearchInterface } from "@/components/SearchInterface";
 import { NLPSearchInterface } from "@/components/NLPSearchInterface";
-import ResumeUpload from "@/components/ResumeUpload";
-import EnhancedResumeUpload from "@/components/EnhancedResumeUpload";
-import OutreachTemplates from "@/components/OutreachTemplates";
-import ThemeToggle from "@/components/ThemeToggle";
+import { ResumeUpload } from "@/components/ResumeUpload";
+import { EnhancedResumeUpload } from "@/components/EnhancedResumeUpload";
+import { OutreachTemplates } from "@/components/OutreachTemplates";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Brain, Search, Upload, MessageSquare, Sparkles } from "lucide-react";
 
 const Index = () => {
