@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SearchInterface } from "@/components/SearchInterface";
 import { NLPSearchInterface } from "@/components/NLPSearchInterface";
 import { ResumeUpload } from "@/components/ResumeUpload";
-import { EnhancedResumeUpload } from "@/components/EnhancedResumeUpload";
+import EnhancedResumeUpload from "@/components/EnhancedResumeUpload";
 import { OutreachTemplates } from "@/components/OutreachTemplates";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Brain, Search, Upload, MessageSquare, Sparkles } from "lucide-react";
