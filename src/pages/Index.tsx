@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +10,10 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { Brain, Search, Upload, MessageSquare, Sparkles } from "lucide-react";
 
 const Index = () => {
+  const [candidates, setCandidates] = useState([]);
+  const [activeTab, setActiveTab] = useState("ai-search");
+  const [selectedCandidateEmail, setSelectedCandidateEmail] = useState("");
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
@@ -24,7 +27,7 @@ const Index = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="ai-search" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="ai-search" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
@@ -77,7 +80,12 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <SearchInterface />
+                <SearchInterface 
+                  candidates={candidates}
+                  setCandidates={setCandidates}
+                  setActiveTab={setActiveTab}
+                  setSelectedCandidateEmail={setSelectedCandidateEmail}
+                />
               </CardContent>
             </Card>
           </TabsContent>
