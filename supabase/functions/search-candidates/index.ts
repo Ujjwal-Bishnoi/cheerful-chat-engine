@@ -11,6 +11,8 @@ const corsHeaders = {
 const supabaseUrl = 'https://ocmqqtgcadltakzuwixd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jbXFxdGdjYWRsdGFrenV3aXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2MjU0MjYsImV4cCI6MjA2NDIwMTQyNn0.u_L1ruz6-gE9q8uuH9bKAZzpUX2IqLoP5qmgTgSd_fQ';
 
+const groqApiKey = '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';
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -25,15 +27,15 @@ serve(async (req) => {
 
     console.log('Processing search query:', query);
 
-    // Use OpenAI API for query understanding and search
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Use Groq API for query understanding and search
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${groqApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'meta-llama/llama-3.1-70b-versatile',
         messages: [
           {
             role: 'system',
@@ -64,18 +66,18 @@ Return only a JSON object with extracted search parameters. Include semantic var
       }),
     });
 
-    if (!openaiResponse.ok) {
-      console.error('OpenAI API error:', await openaiResponse.text());
+    if (!groqResponse.ok) {
+      console.error('Groq API error:', await groqResponse.text());
       throw new Error('Failed to process query with AI');
     }
 
-    const openaiData = await openaiResponse.json();
+    const groqData = await groqResponse.json();
     let searchParams;
     
     try {
-      searchParams = JSON.parse(openaiData.choices[0].message.content);
+      searchParams = JSON.parse(groqData.choices[0].message.content);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', parseError);
+      console.error('Failed to parse Groq response:', parseError);
       // Fallback to simple keyword search
       searchParams = {
         keywords: query.toLowerCase().split(' ').filter(word => word.length > 2)
@@ -213,7 +215,7 @@ Return only a JSON object with extracted search parameters. Include semantic var
       .filter(candidate => candidate.score >= 70) // Only show relevant matches
       .sort((a, b) => b.score - a.score);
 
-    const summary = `Found ${filteredCandidates.length} candidates matching "${query}". Results ranked by AI relevance score.`;
+    const summary = `Found ${filteredCandidates.length} candidates matching "${query}". Results ranked by AI relevance score using Groq LLaMA.`;
 
     return new Response(JSON.stringify({
       success: true,

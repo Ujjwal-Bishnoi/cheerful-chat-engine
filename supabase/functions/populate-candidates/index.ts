@@ -21,564 +21,564 @@ serve(async (req) => {
 
     const newCandidates = [
       {
-        name: "Sarah Chen",
-        email: "sarah.chen@email.com",
-        title: "Senior RAG Engineer",
-        location: "San Francisco, CA",
-        experience_years: 6,
-        summary: "Expert in Retrieval-Augmented Generation systems with extensive experience in LangChain, vector databases, and semantic search. Built production RAG systems serving millions of queries.",
-        availability: "actively_looking",
-        verified: true,
-        verification_score: 92,
-        work_experience: [
-          {
-            role: "Senior RAG Engineer",
-            company: "AI Research Lab",
-            duration: "2022-2024",
-            description: "Led development of enterprise RAG systems using LangChain and Pinecone. Improved retrieval accuracy by 35%."
-          }
-        ],
-        education: [
-          {
-            degree: "MS",
-            field: "Computer Science",
-            institution: "Stanford University",
-            year: "2020"
-          }
-        ],
-        languages: ["English", "Mandarin"]
-      },
-      {
-        name: "Marcus Rodriguez",
-        email: "marcus.rodriguez@email.com",
-        title: "GenAI Research Scientist",
-        location: "Austin, TX",
-        experience_years: 8,
-        summary: "Research scientist specializing in generative AI, PyTorch, and RLHF. Published 15+ papers on transformer architectures and reinforcement learning from human feedback.",
-        availability: "open_to_offers",
-        verified: true,
-        verification_score: 96,
-        work_experience: [
-          {
-            role: "Principal Research Scientist",
-            company: "DeepMind",
-            duration: "2020-2024",
-            description: "Research on large language models, RLHF, and alignment. Led team of 8 researchers working on GPT-4 competitor models."
-          }
-        ],
-        education: [
-          {
-            degree: "PhD",
-            field: "Machine Learning",
-            institution: "MIT",
-            year: "2018"
-          }
-        ],
-        languages: ["English", "Spanish"]
-      },
-      {
-        name: "Emily Watson",
-        email: "emily.watson@email.com",
-        title: "Full Stack Developer",
-        location: "Remote (EU)",
-        experience_years: 5,
-        summary: "Remote-friendly full-stack developer with expertise in React, Node.js, and cloud infrastructure. Strong background in building scalable web applications.",
-        availability: "contract_only",
-        verified: true,
-        verification_score: 88,
-        work_experience: [
-          {
-            role: "Senior Full Stack Developer",
-            company: "TechCorp",
-            duration: "2021-2024",
-            description: "Built and maintained React applications serving 100k+ users. Implemented CI/CD pipelines and microservices architecture."
-          }
-        ],
-        education: [
-          {
-            degree: "BS",
-            field: "Software Engineering",
-            institution: "University of Edinburgh",
-            year: "2019"
-          }
-        ],
-        languages: ["English", "French"]
-      },
-      {
-        name: "David Kim",
-        email: "david.kim@email.com",
-        title: "Engineering Lead",
-        location: "Seattle, WA",
-        experience_years: 10,
-        summary: "Experienced engineering leader with startup background. Led teams of 15+ engineers in scaling applications from prototype to IPO.",
-        availability: "actively_looking",
-        verified: true,
-        verification_score: 94,
-        work_experience: [
-          {
-            role: "VP of Engineering",
-            company: "StartupXYZ",
-            duration: "2020-2024",
-            description: "Scaled engineering team from 5 to 50 people. Led company through Series A to IPO, managing technical infrastructure for 10M+ users."
-          }
-        ],
-        education: [
-          {
-            degree: "MS",
-            field: "Computer Science",
-            institution: "University of Washington",
-            year: "2014"
-          }
-        ],
-        languages: ["English", "Korean"]
-      },
-      {
-        name: "Anna Kowalski",
-        email: "anna.kowalski@email.com",
-        title: "Machine Learning Engineer",
-        location: "Berlin, Germany",
-        experience_years: 4,
-        summary: "ML engineer specializing in computer vision and deep learning. Experience with PyTorch, TensorFlow, and production ML systems.",
-        availability: "open_to_offers",
-        verified: true,
-        verification_score: 87,
-        work_experience: [
-          {
-            role: "ML Engineer",
-            company: "Vision AI",
-            duration: "2022-2024",
-            description: "Developed computer vision models for autonomous vehicles. Improved object detection accuracy by 25% using custom PyTorch implementations."
-          }
-        ],
-        education: [
-          {
-            degree: "MS",
-            field: "Artificial Intelligence",
-            institution: "Technical University of Munich",
-            year: "2020"
-          }
-        ],
-        languages: ["English", "German", "Polish"]
-      },
-      {
-        name: "James Thompson",
-        email: "james.thompson@email.com",
-        title: "Frontend Developer",
-        location: "London, UK",
+        name: "Carlos Mendoza",
+        email: "carlos.mendoza@email.com",
+        title: "Senior Rust Developer",
+        location: "Mexico City, Mexico",
         experience_years: 7,
-        summary: "TypeScript expert with deep knowledge of React ecosystem. Passionate about user experience and modern frontend architecture.",
+        summary: "Systems programmer specializing in Rust, WebAssembly, and high-performance computing. Built distributed systems handling millions of transactions per second.",
         availability: "actively_looking",
         verified: true,
         verification_score: 91,
         work_experience: [
           {
-            role: "Senior Frontend Developer",
-            company: "FinTech Solutions",
+            role: "Senior Rust Developer",
+            company: "HighPerf Systems",
             duration: "2021-2024",
-            description: "Led frontend development for trading platform used by 50k+ traders. Built complex real-time dashboards with React and TypeScript."
+            description: "Developed low-latency trading systems in Rust. Optimized performance achieving sub-microsecond latencies for critical financial operations."
           }
         ],
         education: [
           {
-            degree: "BS",
+            degree: "MS",
             field: "Computer Science",
-            institution: "Imperial College London",
+            institution: "UNAM",
             year: "2017"
           }
         ],
-        languages: ["English"]
+        languages: ["Spanish", "English"]
       },
       {
-        name: "Lisa Zhang",
-        email: "lisa.zhang@email.com",
-        title: "Data Scientist",
-        location: "Toronto, Canada",
-        experience_years: 6,
-        summary: "Data scientist with expertise in NLP, time series analysis, and MLOps. Experience building production ML pipelines at scale.",
+        name: "Fatima Al-Zahra",
+        email: "fatima.alzahra@email.com",
+        title: "Computer Vision Engineer",
+        location: "Dubai, UAE",
+        experience_years: 5,
+        summary: "Computer vision specialist with expertise in autonomous vehicles, medical imaging, and real-time object detection using PyTorch and OpenCV.",
         availability: "open_to_offers",
         verified: true,
         verification_score: 89,
         work_experience: [
           {
-            role: "Senior Data Scientist",
-            company: "DataCorp",
-            duration: "2020-2024",
-            description: "Built recommendation systems and NLP models serving 1M+ users. Implemented MLOps practices reducing model deployment time by 60%."
+            role: "Computer Vision Engineer",
+            company: "AutonomousTech",
+            duration: "2022-2024",
+            description: "Developed vision systems for self-driving cars. Improved object detection accuracy by 28% using custom neural network architectures."
           }
         ],
         education: [
           {
             degree: "PhD",
-            field: "Statistics",
-            institution: "University of Toronto",
-            year: "2018"
-          }
-        ],
-        languages: ["English", "Mandarin", "French"]
-      },
-      {
-        name: "Roberto Silva",
-        email: "roberto.silva@email.com",
-        title: "DevOps Engineer",
-        location: "São Paulo, Brazil",
-        experience_years: 8,
-        summary: "DevOps specialist with expertise in Kubernetes, AWS, and infrastructure automation. Built CI/CD pipelines for high-traffic applications.",
-        availability: "contract_only",
-        verified: true,
-        verification_score: 93,
-        work_experience: [
-          {
-            role: "Principal DevOps Engineer",
-            company: "CloudTech",
-            duration: "2019-2024",
-            description: "Designed and implemented cloud infrastructure for fintech applications. Managed Kubernetes clusters serving 500+ microservices."
-          }
-        ],
-        education: [
-          {
-            degree: "BS",
-            field: "Information Systems",
-            institution: "University of São Paulo",
-            year: "2016"
-          }
-        ],
-        languages: ["Portuguese", "English", "Spanish"]
-      },
-      {
-        name: "Michael O'Connor",
-        email: "michael.oconnor@email.com",
-        title: "Blockchain Developer",
-        location: "Dublin, Ireland",
-        experience_years: 5,
-        summary: "Blockchain developer specializing in Ethereum, Solidity, and DeFi protocols. Built smart contracts handling $100M+ in transactions.",
-        availability: "actively_looking",
-        verified: true,
-        verification_score: 86,
-        work_experience: [
-          {
-            role: "Senior Blockchain Developer",
-            company: "CryptoFin",
-            duration: "2021-2024",
-            description: "Developed DeFi protocols and smart contracts. Led security audits and gas optimization resulting in 40% cost reduction."
-          }
-        ],
-        education: [
-          {
-            degree: "MS",
-            field: "Cryptography",
-            institution: "Trinity College Dublin",
+            field: "Computer Vision",
+            institution: "American University of Sharjah",
             year: "2019"
           }
         ],
-        languages: ["English", "Irish"]
+        languages: ["Arabic", "English", "French"]
       },
       {
-        name: "Priya Patel",
-        email: "priya.patel@email.com",
-        title: "Product Manager",
-        location: "Mumbai, India",
+        name: "Hiroshi Tanaka",
+        email: "hiroshi.tanaka@email.com",
+        title: "Game Engine Developer",
+        location: "Kyoto, Japan",
         experience_years: 9,
-        summary: "Technical product manager with B2B SaaS experience. Led product strategy for AI-powered analytics platform with 10k+ enterprise users.",
-        availability: "open_to_offers",
-        verified: true,
-        verification_score: 90,
-        work_experience: [
-          {
-            role: "Senior Product Manager",
-            company: "Analytics Pro",
-            duration: "2020-2024",
-            description: "Led product roadmap for enterprise analytics platform. Increased user engagement by 45% through AI-powered insights features."
-          }
-        ],
-        education: [
-          {
-            degree: "MBA",
-            field: "Technology Management",
-            institution: "Indian Institute of Management",
-            year: "2015"
-          }
-        ],
-        languages: ["English", "Hindi", "Gujarati"]
-      },
-      {
-        name: "Alex Petrov",
-        email: "alex.petrov@email.com",
-        title: "Security Engineer",
-        location: "Prague, Czech Republic",
-        experience_years: 7,
-        summary: "Cybersecurity expert specializing in application security, penetration testing, and secure code review. CISSP certified with SOC 2 compliance experience.",
+        summary: "Game engine architect with expertise in C++, graphics programming, and real-time rendering. Led development of AAA game engines used by major studios.",
         availability: "contract_only",
         verified: true,
-        verification_score: 88,
+        verification_score: 95,
         work_experience: [
           {
-            role: "Lead Security Engineer",
-            company: "SecureTech",
-            duration: "2020-2024",
-            description: "Led security team for fintech applications. Implemented zero-trust architecture and reduced security incidents by 70%."
+            role: "Principal Engine Developer",
+            company: "GameTech Studios",
+            duration: "2018-2024",
+            description: "Architected next-generation game engine supporting VR/AR platforms. Optimized rendering pipeline achieving 60fps at 4K resolution."
           }
         ],
         education: [
           {
             degree: "MS",
-            field: "Cybersecurity",
-            institution: "Czech Technical University",
-            year: "2017"
-          }
-        ],
-        languages: ["English", "Czech", "Russian"]
-      },
-      {
-        name: "Sofia Martinez",
-        email: "sofia.martinez@email.com",
-        title: "UX Designer",
-        location: "Barcelona, Spain",
-        experience_years: 6,
-        summary: "Senior UX designer with expertise in design systems, user research, and accessibility. Led design for award-winning mobile applications.",
-        availability: "actively_looking",
-        verified: true,
-        verification_score: 85,
-        work_experience: [
-          {
-            role: "Senior UX Designer",
-            company: "DesignStudio",
-            duration: "2021-2024",
-            description: "Led UX design for mobile banking app with 2M+ users. Improved user satisfaction scores by 35% through research-driven design."
-          }
-        ],
-        education: [
-          {
-            degree: "MA",
-            field: "Interaction Design",
-            institution: "Elisava Barcelona",
-            year: "2018"
-          }
-        ],
-        languages: ["Spanish", "English", "Catalan"]
-      },
-      {
-        name: "Kevin Anderson",
-        email: "kevin.anderson@email.com",
-        title: "Mobile Developer",
-        location: "Vancouver, Canada",
-        experience_years: 5,
-        summary: "Mobile developer specializing in React Native and native iOS/Android development. Built cross-platform apps with 1M+ downloads.",
-        availability: "open_to_offers",
-        verified: true,
-        verification_score: 87,
-        work_experience: [
-          {
-            role: "Senior Mobile Developer",
-            company: "MobileFirst",
-            duration: "2022-2024",
-            description: "Developed React Native apps for e-commerce and fitness tracking. Optimized performance achieving 4.8+ app store ratings."
-          }
-        ],
-        education: [
-          {
-            degree: "BS",
-            field: "Computer Science",
-            institution: "University of British Columbia",
-            year: "2019"
-          }
-        ],
-        languages: ["English", "French"]
-      },
-      {
-        name: "Yuki Tanaka",
-        email: "yuki.tanaka@email.com",
-        title: "AI Research Engineer",
-        location: "Tokyo, Japan",
-        experience_years: 4,
-        summary: "AI researcher focused on transformer architectures, multimodal AI, and computer vision. Published research on attention mechanisms and vision transformers.",
-        availability: "actively_looking",
-        verified: true,
-        verification_score: 94,
-        work_experience: [
-          {
-            role: "AI Research Engineer",
-            company: "AI Labs Tokyo",
-            duration: "2022-2024",
-            description: "Research on vision transformers and multimodal AI. Developed novel attention mechanisms improving image classification accuracy by 12%."
-          }
-        ],
-        education: [
-          {
-            degree: "PhD",
-            field: "Artificial Intelligence",
+            field: "Computer Graphics",
             institution: "University of Tokyo",
-            year: "2020"
+            year: "2015"
           }
         ],
         languages: ["Japanese", "English"]
       },
       {
-        name: "Thomas Mueller",
-        email: "thomas.mueller@email.com",
-        title: "Backend Developer",
-        location: "Munich, Germany",
-        experience_years: 8,
-        summary: "Backend specialist with expertise in microservices, Go, and distributed systems. Built high-performance APIs serving 100M+ requests daily.",
-        availability: "contract_only",
+        name: "Nina Johansson",
+        email: "nina.johansson@email.com",
+        title: "Bioinformatics Engineer",
+        location: "Stockholm, Sweden",
+        experience_years: 6,
+        summary: "Computational biologist specializing in genomics, protein folding prediction, and drug discovery. Experience with machine learning for biological data analysis.",
+        availability: "actively_looking",
         verified: true,
-        verification_score: 91,
+        verification_score: 92,
         work_experience: [
           {
-            role: "Principal Backend Engineer",
-            company: "CloudScale",
-            duration: "2019-2024",
-            description: "Architected microservices platform handling 100M+ daily requests. Led migration from monolith to microservices reducing latency by 50%."
+            role: "Senior Bioinformatics Engineer",
+            company: "BioAI Research",
+            duration: "2020-2024",
+            description: "Developed ML models for protein structure prediction. Contributed to drug discovery pipeline reducing time-to-market by 40%."
+          }
+        ],
+        education: [
+          {
+            degree: "PhD",
+            field: "Bioinformatics",
+            institution: "Karolinska Institute",
+            year: "2018"
+          }
+        ],
+        languages: ["Swedish", "English", "German"]
+      },
+      {
+        name: "Kofi Asante",
+        email: "kofi.asante@email.com",
+        title: "Edge Computing Specialist",
+        location: "Accra, Ghana",
+        experience_years: 5,
+        summary: "Edge computing expert focusing on IoT systems, real-time processing, and distributed architectures. Built edge networks for smart city applications.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 87,
+        work_experience: [
+          {
+            role: "Edge Computing Engineer",
+            company: "SmartCity Solutions",
+            duration: "2021-2024",
+            description: "Designed edge computing infrastructure for smart traffic management. Reduced latency by 80% through edge-cloud hybrid architecture."
           }
         ],
         education: [
           {
             degree: "MS",
             field: "Distributed Systems",
-            institution: "Technical University of Munich",
-            year: "2016"
-          }
-        ],
-        languages: ["German", "English"]
-      },
-      {
-        name: "Isabella Costa",
-        email: "isabella.costa@email.com",
-        title: "Data Engineer",
-        location: "Lisbon, Portugal",
-        experience_years: 6,
-        summary: "Data engineer specializing in Apache Spark, Kafka, and real-time data processing. Built data pipelines processing TB-scale datasets.",
-        availability: "open_to_offers",
-        verified: true,
-        verification_score: 89,
-        work_experience: [
-          {
-            role: "Senior Data Engineer",
-            company: "DataFlow",
-            duration: "2021-2024",
-            description: "Built real-time data pipelines using Spark and Kafka. Processed 10TB+ daily data for ML model training and analytics."
-          }
-        ],
-        education: [
-          {
-            degree: "MS",
-            field: "Data Science",
-            institution: "University of Porto",
-            year: "2018"
-          }
-        ],
-        languages: ["Portuguese", "English", "Spanish"]
-      },
-      {
-        name: "Oliver Williams",
-        email: "oliver.williams@email.com",
-        title: "Site Reliability Engineer",
-        location: "Sydney, Australia",
-        experience_years: 7,
-        summary: "SRE with expertise in monitoring, incident response, and system reliability. Maintained 99.99% uptime for critical financial services infrastructure.",
-        availability: "actively_looking",
-        verified: true,
-        verification_score: 92,
-        work_experience: [
-          {
-            role: "Senior SRE",
-            company: "FinanceAI",
-            duration: "2020-2024",
-            description: "Maintained trading systems with 99.99% uptime. Implemented monitoring and alerting reducing MTTR by 60%."
-          }
-        ],
-        education: [
-          {
-            degree: "BS",
-            field: "Computer Engineering",
-            institution: "University of Sydney",
-            year: "2017"
-          }
-        ],
-        languages: ["English"]
-      },
-      {
-        name: "Marie Dubois",
-        email: "marie.dubois@email.com",
-        title: "Quantum Computing Researcher",
-        location: "Paris, France",
-        experience_years: 5,
-        summary: "Quantum computing researcher with expertise in quantum algorithms, Qiskit, and quantum machine learning. PhD in quantum information theory.",
-        availability: "open_to_offers",
-        verified: true,
-        verification_score: 96,
-        work_experience: [
-          {
-            role: "Quantum Research Scientist",
-            company: "Quantum Labs",
-            duration: "2022-2024",
-            description: "Research on quantum machine learning algorithms. Developed novel quantum optimization algorithms showing 10x speedup for specific problems."
-          }
-        ],
-        education: [
-          {
-            degree: "PhD",
-            field: "Quantum Information",
-            institution: "Sorbonne University",
+            institution: "University of Ghana",
             year: "2019"
           }
         ],
-        languages: ["French", "English"]
+        languages: ["English", "Twi", "French"]
       },
       {
-        name: "Ahmed Hassan",
-        email: "ahmed.hassan@email.com",
-        title: "Cloud Architect",
-        location: "Dubai, UAE",
-        experience_years: 9,
-        summary: "Cloud architect specializing in multi-cloud strategies, Azure, and enterprise migrations. Led cloud transformations for Fortune 500 companies.",
+        name: "Valentina Rossi",
+        email: "valentina.rossi@email.com",
+        title: "Robotics Software Engineer",
+        location: "Milan, Italy",
+        experience_years: 7,
+        summary: "Robotics engineer specializing in autonomous navigation, ROS, and industrial automation. Developed control systems for manufacturing robots.",
         availability: "contract_only",
         verified: true,
-        verification_score: 93,
+        verification_score: 90,
         work_experience: [
           {
-            role: "Principal Cloud Architect",
-            company: "CloudConsult",
+            role: "Senior Robotics Engineer",
+            company: "AutoBot Industries",
             duration: "2020-2024",
-            description: "Led cloud migration projects for enterprise clients. Designed multi-cloud architectures reducing infrastructure costs by 40%."
+            description: "Led development of autonomous manufacturing robots. Improved production efficiency by 45% through advanced motion planning algorithms."
           }
         ],
         education: [
           {
             degree: "MS",
-            field: "Cloud Computing",
-            institution: "American University of Dubai",
-            year: "2015"
+            field: "Robotics Engineering",
+            institution: "Polytechnic University of Milan",
+            year: "2017"
           }
         ],
-        languages: ["Arabic", "English"]
+        languages: ["Italian", "English", "German"]
       },
       {
-        name: "Rachel Green",
-        email: "rachel.green@email.com",
-        title: "NLP Engineer",
-        location: "Boston, MA",
-        experience_years: 4,
-        summary: "NLP engineer specializing in transformer models, BERT, and conversational AI. Built chatbots and language models for enterprise applications.",
+        name: "Raj Patel",
+        email: "raj.patel@email.com",
+        title: "Fintech Backend Engineer",
+        location: "Bangalore, India",
+        experience_years: 6,
+        summary: "Backend engineer specializing in payment systems, blockchain integration, and high-frequency trading platforms. Expert in Java, Scala, and distributed systems.",
         availability: "actively_looking",
         verified: true,
         verification_score: 88,
         work_experience: [
           {
-            role: "NLP Engineer",
-            company: "ConversationAI",
+            role: "Senior Backend Engineer",
+            company: "PaymentTech",
+            duration: "2021-2024",
+            description: "Built payment processing system handling 1M+ transactions daily. Implemented blockchain settlement reducing processing time by 70%."
+          }
+        ],
+        education: [
+          {
+            degree: "BTech",
+            field: "Computer Science",
+            institution: "IIT Bangalore",
+            year: "2018"
+          }
+        ],
+        languages: ["English", "Hindi", "Gujarati"]
+      },
+      {
+        name: "Lars Nielsen",
+        email: "lars.nielsen@email.com",
+        title: "AR/VR Developer",
+        location: "Copenhagen, Denmark",
+        experience_years: 5,
+        summary: "Immersive technology developer with expertise in Unity, Unreal Engine, and WebXR. Built enterprise VR training applications and AR shopping experiences.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 86,
+        work_experience: [
+          {
+            role: "AR/VR Developer",
+            company: "ImmersiveTech",
             duration: "2022-2024",
-            description: "Developed enterprise chatbots using BERT and GPT models. Improved conversation quality metrics by 30% through fine-tuning and RLHF."
+            description: "Developed VR training simulations for enterprise clients. Created AR shopping app with 500k+ downloads achieving 4.7 app store rating."
           }
         ],
         education: [
           {
             degree: "MS",
-            field: "Computational Linguistics",
-            institution: "Harvard University",
+            field: "Interactive Media",
+            institution: "Technical University of Denmark",
+            year: "2019"
+          }
+        ],
+        languages: ["Danish", "English", "Norwegian"]
+      },
+      {
+        name: "Aisha Mohamed",
+        email: "aisha.mohamed@email.com",
+        title: "MLOps Engineer",
+        location: "Cairo, Egypt",
+        experience_years: 4,
+        summary: "MLOps specialist focusing on model deployment, monitoring, and CI/CD for machine learning systems. Expert in Kubernetes, Docker, and cloud platforms.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 89,
+        work_experience: [
+          {
+            role: "MLOps Engineer",
+            company: "ML Platform",
+            duration: "2022-2024",
+            description: "Built MLOps platform serving 50+ ML models in production. Reduced model deployment time from weeks to hours through automated pipelines."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Machine Learning",
+            institution: "Cairo University",
             year: "2020"
           }
         ],
-        languages: ["English"]
+        languages: ["Arabic", "English", "French"]
+      },
+      {
+        name: "Sebastian Müller",
+        email: "sebastian.mueller@email.com",
+        title: "Embedded Systems Engineer",
+        location: "Zurich, Switzerland",
+        experience_years: 8,
+        summary: "Embedded systems expert specializing in real-time systems, RTOS, and hardware-software integration. Developed firmware for medical devices and automotive systems.",
+        availability: "contract_only",
+        verified: true,
+        verification_score: 93,
+        work_experience: [
+          {
+            role: "Principal Embedded Engineer",
+            company: "MedTech Solutions",
+            duration: "2019-2024",
+            description: "Led firmware development for life-critical medical devices. Achieved FDA approval for embedded systems with 99.99% reliability requirements."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Embedded Systems",
+            institution: "ETH Zurich",
+            year: "2016"
+          }
+        ],
+        languages: ["German", "English", "French"]
+      },
+      {
+        name: "Grace Kim",
+        email: "grace.kim@email.com",
+        title: "Privacy Engineer",
+        location: "Seoul, South Korea",
+        experience_years: 5,
+        summary: "Privacy engineering specialist with expertise in differential privacy, homomorphic encryption, and GDPR compliance. Built privacy-preserving ML systems.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 91,
+        work_experience: [
+          {
+            role: "Senior Privacy Engineer",
+            company: "PrivacyFirst",
+            duration: "2021-2024",
+            description: "Implemented differential privacy for large-scale data analytics. Ensured GDPR compliance while maintaining data utility for ML applications."
+          }
+        ],
+        education: [
+          {
+            degree: "PhD",
+            field: "Cryptography",
+            institution: "KAIST",
+            year: "2019"
+          }
+        ],
+        languages: ["Korean", "English", "Japanese"]
+      },
+      {
+        name: "Jean-Pierre Dubois",
+        email: "jeanpierre.dubois@email.com",
+        title: "Green Tech Developer",
+        location: "Lyon, France",
+        experience_years: 6,
+        summary: "Sustainable technology developer focusing on energy management systems, smart grids, and carbon footprint optimization. Expert in IoT and renewable energy integration.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 88,
+        work_experience: [
+          {
+            role: "Green Tech Engineer",
+            company: "EcoSystems",
+            duration: "2020-2024",
+            description: "Developed smart grid management system reducing energy waste by 35%. Built IoT platform for renewable energy monitoring and optimization."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Sustainable Engineering",
+            institution: "École Polytechnique",
+            year: "2018"
+          }
+        ],
+        languages: ["French", "English", "German"]
+      },
+      {
+        name: "Olumide Adebayo",
+        email: "olumide.adebayo@email.com",
+        title: "Voice Technology Engineer",
+        location: "Lagos, Nigeria",
+        experience_years: 4,
+        summary: "Voice AI specialist with expertise in speech recognition, NLU, and conversational interfaces. Built voice assistants for African languages and dialects.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 87,
+        work_experience: [
+          {
+            role: "Voice AI Engineer",
+            company: "AfriVoice Tech",
+            duration: "2022-2024",
+            description: "Developed multilingual voice assistant supporting 15 African languages. Improved speech recognition accuracy by 40% for underrepresented languages."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Speech Technology",
+            institution: "University of Lagos",
+            year: "2020"
+          }
+        ],
+        languages: ["English", "Yoruba", "Igbo", "Hausa"]
+      },
+      {
+        name: "Anastasia Volkov",
+        email: "anastasia.volkov@email.com",
+        title: "Quantum Software Developer",
+        location: "Moscow, Russia",
+        experience_years: 5,
+        summary: "Quantum computing software developer with expertise in Qiskit, Cirq, and quantum algorithm optimization. Research focus on quantum machine learning applications.",
+        availability: "contract_only",
+        verified: true,
+        verification_score: 94,
+        work_experience: [
+          {
+            role: "Quantum Software Engineer",
+            company: "QuantumLab",
+            duration: "2021-2024",
+            description: "Developed quantum algorithms for optimization problems. Achieved 100x speedup for specific combinatorial optimization tasks using quantum annealing."
+          }
+        ],
+        education: [
+          {
+            degree: "PhD",
+            field: "Quantum Computing",
+            institution: "Moscow State University",
+            year: "2019"
+          }
+        ],
+        languages: ["Russian", "English", "German"]
+      },
+      {
+        name: "Santiago Rodriguez",
+        email: "santiago.rodriguez@email.com",
+        title: "AgTech Developer",
+        location: "Buenos Aires, Argentina",
+        experience_years: 6,
+        summary: "Agricultural technology developer specializing in precision farming, drone automation, and crop monitoring systems. Expert in computer vision and IoT for agriculture.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 86,
+        work_experience: [
+          {
+            role: "AgTech Engineer",
+            company: "FarmTech Solutions",
+            duration: "2020-2024",
+            description: "Built precision agriculture platform using drone imagery and ML. Increased crop yields by 25% through automated monitoring and intervention systems."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Agricultural Engineering",
+            institution: "University of Buenos Aires",
+            year: "2018"
+          }
+        ],
+        languages: ["Spanish", "English", "Portuguese"]
+      },
+      {
+        name: "Amara Okafor",
+        email: "amara.okafor@email.com",
+        title: "Accessibility Engineer",
+        location: "Toronto, Canada",
+        experience_years: 5,
+        summary: "Accessibility specialist focusing on assistive technology, WCAG compliance, and inclusive design. Built accessibility tools for web and mobile applications.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 90,
+        work_experience: [
+          {
+            role: "Accessibility Engineer",
+            company: "InclusiveTech",
+            duration: "2021-2024",
+            description: "Developed accessibility testing platform used by 200+ organizations. Improved web accessibility compliance rates by 60% through automated testing tools."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Human-Computer Interaction",
+            institution: "University of Toronto",
+            year: "2019"
+          }
+        ],
+        languages: ["English", "French", "Igbo"]
+      },
+      {
+        name: "Dmitri Petrov",
+        email: "dmitri.petrov@email.com",
+        title: "Space Technology Engineer",
+        location: "Moscow, Russia",
+        experience_years: 8,
+        summary: "Aerospace software engineer specializing in satellite systems, mission control software, and space communication protocols. Expert in real-time embedded systems.",
+        availability: "contract_only",
+        verified: true,
+        verification_score: 95,
+        work_experience: [
+          {
+            role: "Senior Space Systems Engineer",
+            company: "Cosmostech",
+            duration: "2018-2024",
+            description: "Developed flight control software for satellite missions. Led software development for Mars mission achieving 99.9% system reliability over 2-year mission."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Aerospace Engineering",
+            institution: "Bauman Moscow State Technical University",
+            year: "2016"
+          }
+        ],
+        languages: ["Russian", "English"]
+      },
+      {
+        name: "Fatou Diallo",
+        email: "fatou.diallo@email.com",
+        title: "EdTech Platform Engineer",
+        location: "Dakar, Senegal",
+        experience_years: 4,
+        summary: "Educational technology developer focusing on adaptive learning systems, content management, and student analytics. Built platforms serving millions of African students.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 88,
+        work_experience: [
+          {
+            role: "EdTech Engineer",
+            company: "AfricaEdu",
+            duration: "2022-2024",
+            description: "Developed adaptive learning platform for K-12 education. Improved student engagement by 50% through personalized learning paths and gamification."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Educational Technology",
+            institution: "Cheikh Anta Diop University",
+            year: "2020"
+          }
+        ],
+        languages: ["French", "Wolof", "English", "Arabic"]
+      },
+      {
+        name: "Ravi Sharma",
+        email: "ravi.sharma@email.com",
+        title: "Renewable Energy Software Engineer",
+        location: "Delhi, India",
+        experience_years: 7,
+        summary: "Clean energy software specialist focusing on solar panel optimization, wind farm management, and energy storage systems. Expert in predictive analytics for renewable energy.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 89,
+        work_experience: [
+          {
+            role: "Senior Energy Software Engineer",
+            company: "GreenPower Systems",
+            duration: "2019-2024",
+            description: "Built energy management system for 500MW solar farm. Optimized energy production through ML-driven predictive maintenance reducing downtime by 40%."
+          }
+        ],
+        education: [
+          {
+            degree: "MTech",
+            field: "Renewable Energy",
+            institution: "IIT Delhi",
+            year: "2017"
+          }
+        ],
+        languages: ["Hindi", "English", "Punjabi"]
+      },
+      {
+        name: "Isabella Santos",
+        email: "isabella.santos@email.com",
+        title: "Healthcare AI Engineer",
+        location: "São Paulo, Brazil",
+        experience_years: 5,
+        summary: "Healthcare AI specialist with expertise in medical imaging, diagnostic systems, and clinical decision support. Built AI models for radiology and pathology analysis.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 92,
+        work_experience: [
+          {
+            role: "Healthcare AI Engineer",
+            company: "MedAI Solutions",
+            duration: "2021-2024",
+            description: "Developed AI diagnostic system for early cancer detection. Achieved 95% accuracy in mammography screening improving early detection rates by 30%."
+          }
+        ],
+        education: [
+          {
+            degree: "PhD",
+            field: "Biomedical Engineering",
+            institution: "University of São Paulo",
+            year: "2019"
+          }
+        ],
+        languages: ["Portuguese", "English", "Spanish"]
       }
     ];
 
@@ -597,26 +597,26 @@ serve(async (req) => {
 
       // Define skills for each candidate
       const candidateSkills = {
-        "sarah.chen@email.com": ["RAG", "LangChain", "Vector Databases", "Python", "Pinecone", "Semantic Search"],
-        "marcus.rodriguez@email.com": ["PyTorch", "RLHF", "Transformers", "Python", "Research", "GenAI"],
-        "emily.watson@email.com": ["React", "Node.js", "TypeScript", "JavaScript", "Cloud", "Full Stack"],
-        "david.kim@email.com": ["Leadership", "Management", "Scaling", "Architecture", "Strategy", "Startups"],
-        "anna.kowalski@email.com": ["PyTorch", "TensorFlow", "Computer Vision", "Deep Learning", "Python", "ML"],
-        "james.thompson@email.com": ["TypeScript", "React", "Frontend", "JavaScript", "UI/UX", "Modern Frontend"],
-        "lisa.zhang@email.com": ["NLP", "MLOps", "Python", "Machine Learning", "Data Science", "Statistics"],
-        "roberto.silva@email.com": ["Kubernetes", "AWS", "DevOps", "CI/CD", "Infrastructure", "Docker"],
-        "michael.oconnor@email.com": ["Blockchain", "Solidity", "Ethereum", "DeFi", "Smart Contracts", "Web3"],
-        "priya.patel@email.com": ["Product Management", "Strategy", "AI", "B2B SaaS", "Analytics", "Leadership"],
-        "alex.petrov@email.com": ["Cybersecurity", "Penetration Testing", "Security", "SOC 2", "CISSP", "DevSecOps"],
-        "sofia.martinez@email.com": ["UX Design", "UI Design", "User Research", "Accessibility", "Design Systems", "Figma"],
-        "kevin.anderson@email.com": ["React Native", "iOS", "Android", "Mobile", "JavaScript", "Cross-platform"],
-        "yuki.tanaka@email.com": ["AI Research", "Transformers", "Computer Vision", "Python", "PyTorch", "Research"],
-        "thomas.mueller@email.com": ["Go", "Microservices", "Backend", "Distributed Systems", "APIs", "Performance"],
-        "isabella.costa@email.com": ["Apache Spark", "Kafka", "Data Engineering", "Python", "ETL", "Big Data"],
-        "oliver.williams@email.com": ["SRE", "Monitoring", "Reliability", "Infrastructure", "Incident Response", "DevOps"],
-        "marie.dubois@email.com": ["Quantum Computing", "Qiskit", "Python", "Research", "Quantum ML", "Algorithms"],
-        "ahmed.hassan@email.com": ["Cloud Architecture", "Azure", "Multi-cloud", "Enterprise", "Migration", "Strategy"],
-        "rachel.green@email.com": ["NLP", "BERT", "Transformers", "Chatbots", "Python", "Conversational AI"]
+        "carlos.mendoza@email.com": ["Rust", "WebAssembly", "Systems Programming", "Performance Optimization", "Distributed Systems", "Low Latency"],
+        "fatima.alzahra@email.com": ["Computer Vision", "PyTorch", "OpenCV", "Autonomous Vehicles", "Medical Imaging", "Object Detection"],
+        "hiroshi.tanaka@email.com": ["C++", "Game Engine", "Graphics Programming", "Real-time Rendering", "VR/AR", "Performance Optimization"],
+        "nina.johansson@email.com": ["Bioinformatics", "Genomics", "Protein Folding", "Drug Discovery", "Machine Learning", "Python"],
+        "kofi.asante@email.com": ["Edge Computing", "IoT", "Real-time Processing", "Distributed Systems", "Smart Cities", "Cloud Architecture"],
+        "valentina.rossi@email.com": ["Robotics", "ROS", "Autonomous Navigation", "Industrial Automation", "Motion Planning", "Control Systems"],
+        "raj.patel@email.com": ["Java", "Scala", "Payment Systems", "Blockchain", "High-frequency Trading", "Distributed Systems"],
+        "lars.nielsen@email.com": ["Unity", "Unreal Engine", "WebXR", "AR/VR", "3D Graphics", "Interactive Media"],
+        "aisha.mohamed@email.com": ["MLOps", "Kubernetes", "Docker", "CI/CD", "Model Deployment", "Cloud Platforms"],
+        "sebastian.mueller@email.com": ["Embedded Systems", "RTOS", "Firmware", "Hardware Integration", "Medical Devices", "Automotive"],
+        "grace.kim@email.com": ["Privacy Engineering", "Differential Privacy", "Homomorphic Encryption", "GDPR", "Cryptography", "Security"],
+        "jeanpierre.dubois@email.com": ["Green Technology", "Smart Grids", "IoT", "Renewable Energy", "Energy Management", "Sustainability"],
+        "olumide.adebayo@email.com": ["Voice AI", "Speech Recognition", "NLU", "Conversational AI", "Multilingual NLP", "African Languages"],
+        "anastasia.volkov@email.com": ["Quantum Computing", "Qiskit", "Cirq", "Quantum Algorithms", "Quantum ML", "Optimization"],
+        "santiago.rodriguez@email.com": ["AgTech", "Precision Farming", "Drone Automation", "Computer Vision", "IoT", "Agriculture"],
+        "amara.okafor@email.com": ["Accessibility", "WCAG", "Assistive Technology", "Inclusive Design", "Testing Automation", "HCI"],
+        "dmitri.petrov@email.com": ["Aerospace", "Satellite Systems", "Mission Control", "Space Communication", "Embedded Systems", "Real-time"],
+        "fatou.diallo@email.com": ["EdTech", "Adaptive Learning", "Student Analytics", "Content Management", "Gamification", "Educational Technology"],
+        "ravi.sharma@email.com": ["Renewable Energy", "Solar Optimization", "Wind Farm Management", "Energy Storage", "Predictive Analytics", "Clean Energy"],
+        "isabella.santos@email.com": ["Healthcare AI", "Medical Imaging", "Diagnostic Systems", "Radiology", "Pathology", "Clinical Decision Support"]
       };
 
       // Get or create skills and link to candidate
@@ -659,11 +659,11 @@ serve(async (req) => {
       }
     }
 
-    console.log('Successfully populated 20 new candidates');
+    console.log('Successfully populated 20 new diverse candidates');
 
     return new Response(JSON.stringify({
       success: true,
-      message: 'Successfully populated 20 new candidates with skills'
+      message: 'Successfully populated 20 new diverse candidates with skills'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
