@@ -7,14 +7,14 @@ import { Badge } from "@/components/ui/badge";
 interface CandidateProfileProps {
   candidate: any;
   onBack: () => void;
+  onSendOutreach?: (candidate: any) => void;
 }
 
-const CandidateProfile = ({ candidate, onBack }: CandidateProfileProps) => {
-  const handleContactClick = () => {
-    const subject = encodeURIComponent(`Opportunity: ${candidate.title} Position`);
-    const body = encodeURIComponent(`Hi ${candidate.name},\n\nI hope this email finds you well. I came across your profile and was impressed by your background in ${candidate.title}.\n\nI would love to discuss an exciting opportunity that might be a great fit for your skills and experience.\n\nWould you be available for a brief call this week?\n\nBest regards`);
-    
-    window.location.href = `mailto:${candidate.email}?subject=${subject}&body=${body}`;
+const CandidateProfile = ({ candidate, onBack, onSendOutreach }: CandidateProfileProps) => {
+  const handleSendOutreach = () => {
+    if (onSendOutreach) {
+      onSendOutreach(candidate);
+    }
   };
 
   return (
@@ -81,11 +81,11 @@ const CandidateProfile = ({ candidate, onBack }: CandidateProfileProps) => {
           {/* Contact Actions */}
           <div className="flex space-x-3">
             <Button 
-              onClick={handleContactClick}
+              onClick={handleSendOutreach}
               className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700"
             >
               <Mail className="w-4 h-4" />
-              <span>Contact via Email</span>
+              <span>Send Outreach</span>
             </Button>
             <Button variant="outline" className="flex items-center space-x-2">
               <Phone className="w-4 h-4" />

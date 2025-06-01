@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Search, Sparkles, SortDesc, Brain } from "lucide-react";
+import { Search, Sparkles, SortDesc, Brain, X, Eye, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,14 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { useCreateSearchQuery, useSearchQueries } from "@/hooks/useSearchQueries";
 import { useNLPSearch } from "@/hooks/useNLPSearch";
 import { useToast } from "@/hooks/use-toast";
+import CandidateProfile from "./CandidateProfile";
 
 interface SearchInterfaceProps {
   candidates: any[];
   setCandidates: (candidates: any[]) => void;
+  setActiveTab?: (tab: string) => void;
+  setSelectedCandidateEmail?: (email: string) => void;
 }
 
-const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) => {
+const SearchInterface = ({ candidates, setCandidates, setActiveTab, setSelectedCandidateEmail }: SearchInterfaceProps) => {
   const [query, setQuery] = useState("");
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
   
   const { toast } = useToast();
   const createSearchQuery = useCreateSearchQuery();
@@ -40,6 +44,18 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
     }
   };
 
+  const handleClear = () => {
+    setQuery("");
+    setCandidates([]);
+  };
+
+  const handleSendOutreach = (candidate: any) => {
+    if (setSelectedCandidateEmail && setActiveTab) {
+      setSelectedCandidateEmail(candidate.email);
+      setActiveTab("outreach");
+    }
+  };
+
   // Update candidates when search results change
   useEffect(() => {
     if (searchResults.length > 0) {
@@ -47,12 +63,25 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
     }
   }, [searchResults, setCandidates]);
 
-  const suggestedQueries = searchQueries?.slice(0, 4).map(sq => sq.query_text) || [
+  // Get unique suggested queries
+  const uniqueSuggestedQueries = Array.from(new Set([
+    ...searchQueries?.slice(0, 2).map(sq => sq.query_text) || [],
     "Find senior React developers with 5+ years experience",
     "Python engineers with machine learning background",
     "Remote-friendly full-stack developers",
     "Engineering leads with startup experience"
-  ];
+  ])).slice(0, 4);
+
+  // Show candidate profile if one is selected
+  if (selectedCandidate) {
+    return (
+      <CandidateProfile 
+        candidate={selectedCandidate} 
+        onBack={() => setSelectedCandidate(null)}
+        onSendOutreach={handleSendOutreach}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -104,6 +133,14 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
                 </div>
               )}
             </Button>
+            <Button 
+              onClick={handleClear}
+              variant="outline"
+              className="px-6 py-6"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear
+            </Button>
           </div>
 
           {/* Search Summary */}
@@ -117,7 +154,7 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
           <div className="space-y-2">
             <p className="text-sm text-gray-600">Try these examples:</p>
             <div className="flex flex-wrap gap-2">
-              {suggestedQueries.map((suggestion, index) => (
+              {uniqueSuggestedQueries.map((suggestion, index) => (
                 <Badge
                   key={index}
                   variant="outline"
@@ -191,10 +228,20 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
                       Contact: {candidate.email}
                     </p>
                     <div className="space-x-2">
-                      <Button variant="outline" size="sm">
-                        View Full Profile
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setSelectedCandidate(candidate)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        View Profile
                       </Button>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      <Button 
+                        size="sm" 
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => handleSendOutreach(candidate)}
+                      >
+                        <Mail className="w-4 h-4 mr-1" />
                         Send Outreach
                       </Button>
                     </div>

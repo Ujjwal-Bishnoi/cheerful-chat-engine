@@ -25,10 +25,65 @@ serve(async (req) => {
 
     console.log('Processing search query:', query);
 
-    // Execute search in Supabase using simple text matching
+    // Use OpenAI API for query understanding and search
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI hiring assistant helping recruiters find candidates from a structured candidate database. Your task is to analyze the recruiter's plain-English query and convert it into search parameters.
+
+Examples:
+Query: "Find senior RAG engineers in EU open to contracts"
+Output: {"keywords": ["RAG", "engineer", "senior"], "skills": ["RAG", "LangChain"], "seniority": "senior", "location": ["EU", "Europe"], "experience_min": 5}
+
+Query: "Looking for GenAI researchers with PyTorch and RLHF experience in the US"
+Output: {"keywords": ["GenAI", "researcher", "PyTorch", "RLHF"], "skills": ["PyTorch", "RLHF", "GenAI"], "location": ["US", "United States"], "experience_min": 3}
+
+Query: "Find Python developers with 3+ years experience"
+Output: {"keywords": ["Python", "developer"], "skills": ["Python"], "experience_min": 3}
+
+Return only a JSON object with extracted search parameters.`
+          },
+          {
+            role: 'user',
+            content: `Extract search parameters from this query: "${query}"`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 500
+      }),
+    });
+
+    if (!openaiResponse.ok) {
+      console.error('OpenAI API error:', await openaiResponse.text());
+      throw new Error('Failed to process query with AI');
+    }
+
+    const openaiData = await openaiResponse.json();
+    let searchParams;
+    
+    try {
+      searchParams = JSON.parse(openaiData.choices[0].message.content);
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', parseError);
+      // Fallback to simple keyword search
+      searchParams = {
+        keywords: query.toLowerCase().split(' ').filter(word => word.length > 2)
+      };
+    }
+
+    console.log('Extracted search parameters:', searchParams);
+
+    // Execute search in Supabase
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Simple text search approach
     let candidatesQuery = supabase
       .from('candidates')
       .select(`
@@ -39,24 +94,33 @@ serve(async (req) => {
         )
       `);
 
-    // Enhanced search logic with multiple conditions
-    const searchTerm = query.toLowerCase();
+    // Build dynamic search query
+    const searchConditions = [];
     
-    if (searchTerm.includes('react')) {
-      candidatesQuery = candidatesQuery.or('title.ilike.%react%,summary.ilike.%react%');
-    } else if (searchTerm.includes('python')) {
-      candidatesQuery = candidatesQuery.or('title.ilike.%python%,summary.ilike.%python%');
-    } else if (searchTerm.includes('javascript')) {
-      candidatesQuery = candidatesQuery.or('title.ilike.%javascript%,summary.ilike.%javascript%');
-    } else if (searchTerm.includes('senior')) {
-      candidatesQuery = candidatesQuery.gte('experience_years', 5);
-    } else if (searchTerm.includes('junior')) {
-      candidatesQuery = candidatesQuery.lte('experience_years', 2);
-    } else if (searchTerm.includes('full stack') || searchTerm.includes('fullstack')) {
-      candidatesQuery = candidatesQuery.or('title.ilike.%full%,title.ilike.%stack%,summary.ilike.%full%,summary.ilike.%stack%');
-    } else {
-      // General text search across multiple fields
-      candidatesQuery = candidatesQuery.or(`title.ilike.%${searchTerm}%,summary.ilike.%${searchTerm}%,name.ilike.%${searchTerm}%`);
+    // Search in title, summary, name
+    if (searchParams.keywords && searchParams.keywords.length > 0) {
+      const keywordConditions = searchParams.keywords.map((keyword: string) => 
+        `title.ilike.%${keyword}%,summary.ilike.%${keyword}%,name.ilike.%${keyword}%`
+      ).join(',');
+      searchConditions.push(keywordConditions);
+    }
+
+    // Location search
+    if (searchParams.location && searchParams.location.length > 0) {
+      const locationConditions = searchParams.location.map((loc: string) => 
+        `location.ilike.%${loc}%`
+      ).join(',');
+      searchConditions.push(locationConditions);
+    }
+
+    // Experience filter
+    if (searchParams.experience_min) {
+      candidatesQuery = candidatesQuery.gte('experience_years', searchParams.experience_min);
+    }
+
+    // Apply OR conditions
+    if (searchConditions.length > 0) {
+      candidatesQuery = candidatesQuery.or(searchConditions.join(','));
     }
 
     const { data: candidates, error: searchError } = await candidatesQuery.limit(20);
@@ -66,14 +130,48 @@ serve(async (req) => {
       throw new Error('Failed to search candidates');
     }
 
-    // Transform the data to include skills array
-    const transformedCandidates = candidates?.map(candidate => ({
-      ...candidate,
-      skills: candidate.candidate_skills?.map((cs: any) => cs.skills?.name).filter(Boolean) || [],
-      score: Math.floor(Math.random() * 20) + 80 // Simulated relevance score
-    })) || [];
+    // Transform the data to include skills array and calculate relevance score
+    const transformedCandidates = candidates?.map(candidate => {
+      const skills = candidate.candidate_skills?.map((cs: any) => cs.skills?.name).filter(Boolean) || [];
+      
+      // Calculate relevance score based on matches
+      let score = 60; // Base score
+      
+      // Skill matches
+      if (searchParams.skills) {
+        const skillMatches = searchParams.skills.filter((skill: string) => 
+          skills.some(candidateSkill => 
+            candidateSkill.toLowerCase().includes(skill.toLowerCase())
+          )
+        ).length;
+        score += skillMatches * 15;
+      }
 
-    const summary = `Found ${transformedCandidates.length} candidates matching "${query}". Results include candidates with relevant skills and experience.`;
+      // Experience bonus
+      if (searchParams.experience_min && candidate.experience_years >= searchParams.experience_min) {
+        score += 10;
+      }
+
+      // Keyword matches in title/summary
+      if (searchParams.keywords) {
+        const titleSummaryText = `${candidate.title} ${candidate.summary}`.toLowerCase();
+        const keywordMatches = searchParams.keywords.filter((keyword: string) => 
+          titleSummaryText.includes(keyword.toLowerCase())
+        ).length;
+        score += keywordMatches * 10;
+      }
+
+      return {
+        ...candidate,
+        skills,
+        score: Math.min(score, 99) // Cap at 99%
+      };
+    }) || [];
+
+    // Sort by relevance score
+    transformedCandidates.sort((a, b) => b.score - a.score);
+
+    const summary = `Found ${transformedCandidates.length} candidates matching "${query}". Results ranked by AI relevance score.`;
 
     return new Response(JSON.stringify({
       success: true,
@@ -93,7 +191,7 @@ serve(async (req) => {
       summary: 'Search failed. Please try again.',
       count: 0
     }), {
-      status: 200, // Return 200 to avoid client-side errors
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

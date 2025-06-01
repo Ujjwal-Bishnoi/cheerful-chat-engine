@@ -4,23 +4,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Filter, Mail, Eye, TrendingUp } from "lucide-react";
+import { Users, Filter, TrendingUp, Eye } from "lucide-react";
 import { useCandidates } from "@/hooks/useCandidates";
 import { useState } from "react";
 import CandidateProfile from "./CandidateProfile";
 
 interface CandidateResultsProps {
   candidates: any[];
+  setActiveTab?: (tab: string) => void;
+  setSelectedCandidateEmail?: (email: string) => void;
 }
 
-const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProps) => {
+const CandidateResults = ({ candidates: searchCandidates, setActiveTab, setSelectedCandidateEmail }: CandidateResultsProps) => {
   const { data: allCandidates = [], isLoading } = useCandidates();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
-  // Use search candidates if available, otherwise show all candidates
-  const displayCandidates = searchCandidates.length > 0 ? searchCandidates : allCandidates;
+  // Always show all candidates in this tab, ignore search candidates
+  const displayCandidates = allCandidates;
 
   const filteredCandidates = displayCandidates.filter(candidate => {
     const matchesSearch = candidate.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -34,6 +36,13 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
 
   const formatAvailability = (availability: string) => {
     return availability?.replace('_', ' ').replace('to_', 'to ') || '';
+  };
+
+  const handleSendOutreach = (candidate: any) => {
+    if (setSelectedCandidateEmail && setActiveTab) {
+      setSelectedCandidateEmail(candidate.email);
+      setActiveTab("outreach");
+    }
   };
 
   if (isLoading) {
@@ -50,6 +59,7 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
       <CandidateProfile 
         candidate={selectedCandidate} 
         onBack={() => setSelectedCandidate(null)}
+        onSendOutreach={handleSendOutreach}
       />
     );
   }
@@ -119,7 +129,7 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
           <CardContent className="p-6">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-orange-600 rounded-lg">
-                <Mail className="w-6 h-6 text-white" />
+                <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-orange-800">0</p>
@@ -231,10 +241,6 @@ const CandidateResults = ({ candidates: searchCandidates }: CandidateResultsProp
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       View Profile
-                    </Button>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                      <Mail className="w-4 h-4 mr-1" />
-                      Send Outreach
                     </Button>
                   </div>
                 </div>

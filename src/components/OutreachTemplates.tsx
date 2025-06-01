@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquare, Plus, Edit, Copy, Eye, TrendingUp, Send, Users } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOutreachTemplates } from "@/hooks/useOutreachTemplates";
 
-const OutreachTemplates = () => {
+interface OutreachTemplatesProps {
+  selectedCandidateEmail?: string;
+}
+
+const OutreachTemplates = ({ selectedCandidateEmail }: OutreachTemplatesProps) => {
   const { data: templates = [], isLoading } = useOutreachTemplates();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
+
+  const selectedTemplateData = templates.find(t => t.id === selectedTemplate);
+
+  const handleUseTemplate = () => {
+    if (selectedTemplateData && selectedCandidateEmail) {
+      const subject = encodeURIComponent(selectedTemplateData.subject);
+      const body = encodeURIComponent(selectedTemplateData.content.replace('{candidate_email}', selectedCandidateEmail));
+      window.location.href = `mailto:${selectedCandidateEmail}?subject=${subject}&body=${body}`;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -21,8 +35,6 @@ const OutreachTemplates = () => {
       </div>
     );
   }
-
-  const selectedTemplateData = templates.find(t => t.id === selectedTemplate);
 
   return (
     <div className="space-y-6">
@@ -35,6 +47,11 @@ const OutreachTemplates = () => {
         <p className="text-gray-600 max-w-2xl mx-auto">
           Create and manage personalized outreach templates. AI-powered personalization helps you connect with candidates effectively.
         </p>
+        {selectedCandidateEmail && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-800">Selected candidate: <strong>{selectedCandidateEmail}</strong></p>
+          </div>
+        )}
       </div>
 
       {/* Stats */}
@@ -163,8 +180,12 @@ const OutreachTemplates = () => {
                     <Eye className="w-4 h-4 mr-1" />
                     {previewMode ? 'Edit' : 'Preview'}
                   </Button>
-                  {selectedTemplateData && (
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                  {selectedTemplateData && selectedCandidateEmail && (
+                    <Button 
+                      size="sm" 
+                      className="bg-blue-600 hover:bg-blue-700"
+                      onClick={handleUseTemplate}
+                    >
                       <Send className="w-4 h-4 mr-1" />
                       Use Template
                     </Button>

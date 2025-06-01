@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Upload, Users, MessageSquare, Zap, Shield, Target, LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [candidates, setCandidates] = useState([]);
+  const [selectedCandidateEmail, setSelectedCandidateEmail] = useState("");
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -91,7 +93,7 @@ const Index = () => {
                   className="flex items-center space-x-2"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  <span>Outreach</span>
+                  <span>Outreach Templates</span>
                 </Button>
               </nav>
               <div className="flex items-center space-x-2">
@@ -196,11 +198,24 @@ const Index = () => {
       {/* Main Content Area */}
       <main className="container mx-auto px-4 py-8">
         {activeTab === "home" && (
-          <SearchInterface candidates={candidates} setCandidates={setCandidates} />
+          <SearchInterface 
+            candidates={candidates} 
+            setCandidates={setCandidates}
+            setActiveTab={setActiveTab}
+            setSelectedCandidateEmail={setSelectedCandidateEmail}
+          />
         )}
         {activeTab === "upload" && <EnhancedResumeUpload />}
-        {activeTab === "candidates" && <CandidateResults candidates={candidates} />}
-        {activeTab === "outreach" && <OutreachTemplates />}
+        {activeTab === "candidates" && (
+          <CandidateResults 
+            candidates={candidates}
+            setActiveTab={setActiveTab}
+            setSelectedCandidateEmail={setSelectedCandidateEmail}
+          />
+        )}
+        {activeTab === "outreach" && (
+          <OutreachTemplates selectedCandidateEmail={selectedCandidateEmail} />
+        )}
       </main>
 
       {/* Footer */}
@@ -230,7 +245,7 @@ const Index = () => {
             <div>
               <h3 className="font-semibold mb-4">Technology</h3>
               <ul className="space-y-2 text-gray-400">
-                <li>DeepSeek LLM</li>
+                <li>OpenAI GPT</li>
                 <li>Supabase Backend</li>
                 <li>React Frontend</li>
                 <li>Vector Search</li>
