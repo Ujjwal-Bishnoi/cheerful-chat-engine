@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -8,9 +7,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const groqApiKey = Deno.env.get('GROQ_API_KEY')!;
+// Load environment variables
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+const groqApiKey = Deno.env.get('GROQ_API_KEY');
+
+if (!supabaseUrl || !supabaseServiceKey || !groqApiKey) {
+  console.error("❌ Missing one or more environment variables");
+  throw new Error("Missing environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GROQ_API_KEY");
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -19,7 +24,7 @@ serve(async (req) => {
 
   try {
     const { query } = await req.json();
-    
+
     if (!query) {
       return new Response(JSON.stringify({ error: 'Query is required' }), {
         status: 400,
@@ -27,12 +32,11 @@ serve(async (req) => {
       });
     }
 
-    console.log('Processing NLP search query:', query);
+    console.log('🔍 Processing NLP search query:', query);
 
-    // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get all candidates with their skills
+    // Fetch candidates and skills
     const { data: candidates, error: candidatesError } = await supabase
       .from('candidates')
       .select(`
@@ -45,14 +49,14 @@ serve(async (req) => {
         )
       `);
 
-    if (candidatesError) {
-      console.error('Error fetching candidates:', candidatesError);
-      throw candidatesError;
+    if (candidatesError || !candidates) {
+      console.error('❌ Error fetching candidates:', candidatesError);
+      return new Response(JSON.stringify({ error: 'Failed to fetch candidates' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log(`Found ${candidates.length} candidates to analyze`);
-
-    // Transform candidates data for LLM processing
     const candidatesForLLM = candidates.map(candidate => ({
       id: candidate.id,
       name: candidate.name,
@@ -69,42 +73,8 @@ serve(async (req) => {
       })) || []
     }));
 
-    // Create the prompt for Groq API with in-context learning
-    const prompt = `You are an expert talent sourcer and recruiter. Your task is to analyze candidates and rank them based on how well they match a search query.
+    const prompt = `You are an expert talent sourcer and recruiter... \nSEARCH QUERY: "${query}"\n\nCANDIDATES DATA:\n${JSON.stringify(candidatesForLLM, null, 2)}\n...`;
 
-INSTRUCTIONS:
-1. Analyze the search query to understand the requirements (skills, experience level, role type, etc.)
-2. Score each candidate from 0-100 based on relevance to the query
-3. Consider: skills match, experience level, job title relevance, availability status
-4. Return ONLY a JSON array of candidate IDs with their scores, sorted by score (highest first)
-5. Include a brief explanation for the top matches
-
-EXAMPLES:
-
-Query: "Senior React developer with 5+ years experience"
-Expected response: Focus on candidates with React skills, 5+ years experience, frontend/fullstack roles
-
-Query: "Machine learning engineer for computer vision"
-Expected response: Prioritize ML engineers with computer vision, deep learning, Python skills
-
-Query: "DevOps engineer with Kubernetes and AWS"
-Expected response: Look for DevOps/SRE roles with Kubernetes, AWS, Docker, CI/CD skills
-
-SEARCH QUERY: "${query}"
-
-CANDIDATES DATA:
-${JSON.stringify(candidatesForLLM, null, 2)}
-
-Return your response as a JSON object with this structure:
-{
-  "results": [
-    {"candidate_id": "uuid", "score": 95, "reason": "Perfect match - Senior ML Engineer with 6 years experience in computer vision and deep learning"},
-    {"candidate_id": "uuid", "score": 87, "reason": "Strong match - React specialist with 8 years experience"}
-  ],
-  "summary": "Brief explanation of the search and ranking criteria used"
-}`;
-
-    // Call Groq API with a currently supported model
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -116,7 +86,7 @@ Return your response as a JSON object with this structure:
         messages: [
           {
             role: 'system',
-            content: 'You are an expert recruiter and talent sourcer. Analyze candidates and provide accurate relevance scores based on search queries. Always return valid JSON.'
+            content: 'You are an expert recruiter and talent sourcer...'
           },
           {
             role: 'user',
@@ -130,36 +100,42 @@ Return your response as a JSON object with this structure:
 
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
-      console.error('Groq API error:', errorText);
-      throw new Error(`Groq API error: ${groqResponse.status}`);
+      console.error('❌ Groq API error:', errorText);
+      return new Response(JSON.stringify({ error: 'Groq API request failed' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const groqData = await groqResponse.json();
-    console.log('Groq API response received');
+    const content = groqData.choices[0]?.message?.content;
+
+    if (!content) {
+      console.error('❌ No content in Groq response');
+      return new Response(JSON.stringify({ error: 'No valid content from LLM' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     let analysisResult;
     try {
-      const content = groqData.choices[0]?.message?.content;
-      if (!content) {
-        throw new Error('No content in Groq response');
-      }
-      
-      // Parse the JSON response from Groq
       analysisResult = JSON.parse(content);
     } catch (parseError) {
-      console.error('Error parsing Groq response:', parseError);
-      console.error('Raw content:', groqData.choices[0]?.message?.content);
-      throw new Error('Failed to parse LLM response');
+      console.error('❌ Error parsing Groq response:', parseError);
+      console.error('Raw content:', content);
+      return new Response(JSON.stringify({ error: 'Failed to parse LLM response' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Get the ranked candidate IDs and scores
     const rankedResults = analysisResult.results || [];
-    
-    // Fetch full candidate details for the ranked results
+
     const rankedCandidates = rankedResults.map((result: any) => {
       const candidate = candidates.find(c => c.id === result.candidate_id);
       if (!candidate) return null;
-      
+
       return {
         id: candidate.id,
         name: candidate.name,
@@ -177,7 +153,6 @@ Return your response as a JSON object with this structure:
       };
     }).filter(Boolean);
 
-    // Store search query and results
     const { data: searchQuery, error: searchError } = await supabase
       .from('search_queries')
       .insert({
@@ -189,10 +164,9 @@ Return your response as a JSON object with this structure:
       .single();
 
     if (searchError) {
-      console.error('Error storing search query:', searchError);
+      console.error('⚠️ Error storing search query:', searchError);
     }
 
-    // Store search results if we have a search query ID
     if (searchQuery?.id && rankedCandidates.length > 0) {
       const searchResultsData = rankedCandidates.map((candidate, index) => ({
         search_query_id: searchQuery.id,
@@ -207,11 +181,11 @@ Return your response as a JSON object with this structure:
         .insert(searchResultsData);
 
       if (resultsError) {
-        console.error('Error storing search results:', resultsError);
+        console.error('⚠️ Error storing search results:', resultsError);
       }
     }
 
-    console.log(`Returning ${rankedCandidates.length} ranked candidates`);
+    console.log(`✅ Returning ${rankedCandidates.length} ranked candidates`);
 
     return new Response(JSON.stringify({
       success: true,
@@ -224,10 +198,10 @@ Return your response as a JSON object with this structure:
     });
 
   } catch (error) {
-    console.error('Error in NLP search function:', error);
+    console.error('💥 Unexpected error in NLP search function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      success: false 
+      success: false
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
