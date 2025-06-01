@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { Search, Sparkles, SortDesc, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,14 +9,8 @@ import { useCreateSearchQuery, useSearchQueries } from "@/hooks/useSearchQueries
 import { useNLPSearch } from "@/hooks/useNLPSearch";
 import { useToast } from "@/hooks/use-toast";
 
-interface SearchInterfaceProps {
-  candidates: any[];
-  setCandidates: (candidates: any[]) => void;
-}
-
-const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) => {
+const SearchInterface = () => {
   const [query, setQuery] = useState("");
-  const [localSearchResults, setLocalSearchResults] = useState<any[]>([]);
   
   const { toast } = useToast();
   const createSearchQuery = useCreateSearchQuery();
@@ -40,23 +35,12 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
     }
   };
 
-  // Update local search results when search completes
-  useEffect(() => {
-    if (searchResults.length > 0) {
-      setLocalSearchResults(searchResults);
-      // Don't update the main candidates list - keep search independent
-    }
-  }, [searchResults]);
-
   const suggestedQueries = searchQueries?.slice(0, 4).map(sq => sq.query_text) || [
     "Find senior React developers with 5+ years experience",
     "Python engineers with machine learning background",
     "Remote-friendly full-stack developers",
     "Engineering leads with startup experience"
   ];
-
-  // Use local search results instead of the passed candidates prop
-  const displayCandidates = localSearchResults.length > 0 ? localSearchResults : [];
 
   return (
     <div className="space-y-6">
@@ -137,21 +121,21 @@ const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) =>
       </Card>
 
       {/* Results */}
-      {displayCandidates.length > 0 && (
+      {searchResults.length > 0 && (
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
                 <SortDesc className="w-5 h-5" />
                 <span>Search Results</span>
-                <Badge variant="secondary">{displayCandidates.length} candidates</Badge>
+                <Badge variant="secondary">{searchResults.length} candidates</Badge>
               </CardTitle>
               <p className="text-sm text-gray-600">Ranked by AI relevance score</p>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {displayCandidates.map((candidate) => (
+              {searchResults.map((candidate) => (
                 <div
                   key={candidate.id}
                   className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white"

@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -24,7 +25,7 @@ serve(async (req) => {
 
     console.log('Processing resume:', fileName);
 
-    // Download and extract text
+    // Download the file content
     const fileResponse = await fetch(fileUrl);
     if (!fileResponse.ok) {
       throw new Error('Failed to download file');
@@ -33,48 +34,54 @@ serve(async (req) => {
     const fileBuffer = await fileResponse.arrayBuffer();
     const fileText = new TextDecoder().decode(fileBuffer);
     
-    // Clean and normalize text
-    let extractedText = fileText
-      .replace(/[^\x20-\x7E\n\r]/g, ' ') // Remove non-printable characters
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .replace(/obj|endobj|stream|endstream/g, '') // Remove PDF metadata
-      .trim();
+    // Extract text content (simplified - in production you'd use PDF parsing libraries)
+    let extractedText = fileText;
+    
+    // If it looks like a PDF, extract readable content
+    if (fileName.toLowerCase().endsWith('.pdf')) {
+      // Simple PDF text extraction - in production use proper PDF parser
+      extractedText = fileText.replace(/[^\x20-\x7E\n]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
 
-    // Enhanced DeepSeek prompt for field extraction
-    const prompt = `You are an intelligent resume parser. Extract the following fields from the resume text, even if the format is non-standard. Use best effort and context.
+    console.log('Extracted text length:', extractedText.length);
 
-Return fields in this exact JSON format:
+    // Create prompt for DeepSeek API
+    const prompt = `Extract structured information from this resume text and return ONLY a valid JSON object with the following fields:
+
 {
-  "name": "",
-  "email": "",
-  "phone": "",
-  "location": "",
-  "total_experience": "",
-  "skills": [],
-  "current_role": "",
-  "education": "",
-  "linkedin": "",
-  "github": ""
+  "name": "candidate full name",
+  "email": "email address",
+  "title": "current or desired job title",
+  "location": "location/address",
+  "summary": "brief professional summary",
+  "experience_years": number,
+  "skills": ["skill1", "skill2", "skill3"],
+  "work_experience": [
+    {
+      "company": "company name",
+      "role": "job title",
+      "duration": "employment period",
+      "description": "brief description"
+    }
+  ],
+  "education": [
+    {
+      "institution": "school name",
+      "degree": "degree type",
+      "field": "field of study",
+      "year": "graduation year"
+    }
+  ],
+  "certifications": ["cert1", "cert2"],
+  "languages": ["language1", "language2"]
 }
 
-Rules:
-- If email or phone is in a footer/header, still extract
-- Skills should be inferred from both skill sections and work descriptions
-- Use context (e.g., "worked at HuggingFace on Transformers → skill = Transformers, NLP, HuggingFace")
-- Extract years of experience as a number
-- For location, extract city/state/country if available
-- For current role, extract the most recent job title
-- For education, extract degree and institution
-
-Extract the following fields from this resume:
-
-<<<
+Resume text:
 ${extractedText.slice(0, 4000)}
->>>
 
-Return ONLY the JSON object, no other text:`;
+Return only the JSON object, no other text.`;
 
-    // Call DeepSeek API for parsing
+    // Call DeepSeek API
     const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
@@ -111,52 +118,41 @@ Return ONLY the JSON object, no other text:`;
       parsedData = JSON.parse(extractedData);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
+      // Fallback to basic extraction
       parsedData = {
-        name: extractNameFromText(extractedText) || fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, ' '),
-        email: extractEmailFromText(extractedText) || "",
-        phone: extractPhoneFromText(extractedText) || "",
-        location: extractLocationFromText(extractedText) || "Not specified",
-        total_experience: extractExperienceFromText(extractedText) || 0,
-        skills: extractSkillsFromText(extractedText) || [],
-        current_role: extractCurrentRoleFromText(extractedText) || "Software Developer",
-        education: extractEducationFromText(extractedText) || "",
-        linkedin: extractLinkedInFromText(extractedText) || "",
-        github: extractGitHubFromText(extractedText) || ""
+        name: "Unknown",
+        email: "",
+        title: "Not specified",
+        location: "",
+        summary: extractedText.slice(0, 200),
+        experience_years: 0,
+        skills: [],
+        work_experience: [],
+        education: [],
+        certifications: [],
+        languages: []
       };
     }
-
-    // Map to database format with enhanced fields
-    const candidateData = {
-      name: parsedData.name || "Unknown",
-      email: parsedData.email || "",
-      title: parsedData.current_role || "Not specified",
-      location: parsedData.location || "",
-      summary: `${parsedData.current_role || 'Professional'} with ${parsedData.total_experience || 0} years of experience. ${parsedData.education ? 'Education: ' + parsedData.education : ''}`.trim(),
-      experience_years: parseInt(parsedData.total_experience) || 0,
-      availability: 'open_to_offers',
-      verification_score: calculateVerificationScore(parsedData),
-      verified: isVerifiedProfile(parsedData),
-      work_experience: [{
-        company: "Previous Company",
-        role: parsedData.current_role || "Professional",
-        duration: "Recent",
-        description: `Professional with expertise in: ${parsedData.skills?.join(', ') || 'various technologies'}`
-      }],
-      education: parsedData.education ? [{
-        institution: parsedData.education.split(',')[0]?.trim() || "Institution",
-        degree: extractDegreeFromEducation(parsedData.education),
-        field: extractFieldFromEducation(parsedData.education),
-        year: extractYearFromEducation(parsedData.education) || "Recent"
-      }] : [],
-      certifications: [],
-      languages: ["English"],
-      linkedin_url: parsedData.linkedin || null,
-      github_url: parsedData.github || null
-    };
 
     // Store in Supabase
     const supabase = createClient(supabaseUrl, supabaseKey);
     
+    const candidateData = {
+      name: parsedData.name || "Unknown",
+      email: parsedData.email || "",
+      title: parsedData.title || "Not specified",
+      location: parsedData.location || "",
+      summary: parsedData.summary || "",
+      experience_years: parsedData.experience_years || 0,
+      availability: 'open_to_offers',
+      verification_score: 85,
+      verified: true,
+      work_experience: parsedData.work_experience || [],
+      education: parsedData.education || [],
+      certifications: parsedData.certifications || [],
+      languages: parsedData.languages || []
+    };
+
     const { data: candidate, error: candidateError } = await supabase
       .from('candidates')
       .insert(candidateData)
@@ -168,30 +164,25 @@ Return ONLY the JSON object, no other text:`;
       throw new Error('Failed to save candidate data');
     }
 
-    // Insert skills with enhanced categorization
+    // Insert skills
     if (parsedData.skills && parsedData.skills.length > 0) {
       for (const skillName of parsedData.skills) {
-        const category = categorizeSkill(skillName);
-        
         // Insert or get skill
         const { data: skill } = await supabase
           .from('skills')
-          .upsert({ 
-            name: skillName, 
-            category: category
-          }, { onConflict: 'name' })
+          .upsert({ name: skillName, category: 'Technical' }, { onConflict: 'name' })
           .select()
           .single();
 
         if (skill) {
-          // Link skill to candidate with proficiency
+          // Link skill to candidate
           await supabase
             .from('candidate_skills')
             .insert({
               candidate_id: candidate.id,
               skill_id: skill.id,
-              proficiency_level: estimateSkillProficiency(skillName, extractedText),
-              years_experience: estimateSkillYears(skillName, extractedText, parsedData.total_experience)
+              proficiency_level: 4,
+              years_experience: 2
             });
         }
       }
@@ -204,10 +195,9 @@ Return ONLY the JSON object, no other text:`;
         candidate_id: candidate.id,
         filename: fileName,
         content_text: extractedText.slice(0, 10000),
-        parsing_confidence: calculateParsingConfidence(parsedData),
+        parsing_confidence: 85,
         parsed_data: parsedData,
-        file_size: fileBuffer.byteLength,
-        parsing_flags: generateParsingFlags(parsedData)
+        file_size: fileBuffer.byteLength
       });
 
     return new Response(JSON.stringify({
@@ -229,182 +219,3 @@ Return ONLY the JSON object, no other text:`;
     });
   }
 });
-
-// Helper functions for enhanced parsing
-function calculateVerificationScore(parsedData: any): number {
-  let score = 60; // Base score
-  if (parsedData.email) score += 10;
-  if (parsedData.phone) score += 5;
-  if (parsedData.linkedin) score += 10;
-  if (parsedData.github) score += 5;
-  if (parsedData.education) score += 5;
-  if (parsedData.skills?.length > 3) score += 5;
-  return Math.min(score, 100);
-}
-
-function isVerifiedProfile(parsedData: any): boolean {
-  return calculateVerificationScore(parsedData) >= 85;
-}
-
-function categorizeSkill(skill: string): string {
-  const categories = {
-    'Programming': ['JavaScript', 'Python', 'Java', 'TypeScript', 'C++', 'Go', 'Rust'],
-    'AI/ML': ['PyTorch', 'TensorFlow', 'RAG', 'LangChain', 'RLHF', 'Machine Learning'],
-    'Web': ['React', 'Angular', 'Vue', 'Node.js', 'HTML', 'CSS'],
-    'Database': ['SQL', 'MongoDB', 'PostgreSQL', 'Redis'],
-    'DevOps': ['Docker', 'Kubernetes', 'AWS', 'CI/CD'],
-    'Mobile': ['React Native', 'Flutter', 'iOS', 'Android']
-  };
-
-  for (const [category, keywords] of Object.entries(categories)) {
-    if (keywords.some(k => skill.toLowerCase().includes(k.toLowerCase()))) {
-      return category;
-    }
-  }
-  return 'Other';
-}
-
-function estimateSkillProficiency(skill: string, text: string): number {
-  const mentions = (text.match(new RegExp(skill, 'gi')) || []).length;
-  const hasLeadMention = text.toLowerCase().includes(`lead ${skill.toLowerCase()}`);
-  const hasSeniorMention = text.toLowerCase().includes(`senior ${skill.toLowerCase()}`);
-  
-  let score = 3; // Base proficiency
-  if (mentions > 3) score++;
-  if (hasLeadMention || hasSeniorMention) score++;
-  return Math.min(score, 5);
-}
-
-function estimateSkillYears(skill: string, text: string, totalExperience: number): number {
-  const yearPattern = new RegExp(`(\\d+)\\s*years?.*?${skill}`, 'i');
-  const match = text.match(yearPattern);
-  if (match) {
-    return Math.min(parseInt(match[1]), totalExperience || 10);
-  }
-  return Math.floor(totalExperience / 2) || 1;
-}
-
-function calculateParsingConfidence(parsedData: any): number {
-  let confidence = 70; // Base confidence
-  const requiredFields = ['name', 'email', 'current_role', 'skills'];
-  const presentFields = requiredFields.filter(f => parsedData[f] && parsedData[f].length > 0);
-  confidence += (presentFields.length / requiredFields.length) * 30;
-  return Math.round(confidence);
-}
-
-function generateParsingFlags(parsedData: any): string[] {
-  const flags = [];
-  if (!parsedData.email) flags.push('missing_email');
-  if (!parsedData.name) flags.push('missing_name');
-  if (!parsedData.skills?.length) flags.push('missing_skills');
-  if (parsedData.skills?.length > 20) flags.push('excessive_skills');
-  return flags;
-}
-
-function extractDegreeFromEducation(education: string): string {
-  const degrees = ['Bachelor', 'Master', 'PhD', 'BSc', 'MSc', 'BA', 'MA'];
-  for (const degree of degrees) {
-    if (education?.toLowerCase().includes(degree.toLowerCase())) {
-      return degree;
-    }
-  }
-  return "Degree";
-}
-
-function extractFieldFromEducation(education: string): string {
-  const fields = ['Computer Science', 'Engineering', 'Information Technology', 'Mathematics'];
-  for (const field of fields) {
-    if (education?.toLowerCase().includes(field.toLowerCase())) {
-      return field;
-    }
-  }
-  return "Field of Study";
-}
-
-function extractYearFromEducation(education: string): string {
-  const yearPattern = /20\d{2}|19\d{2}/;
-  const match = education?.match(yearPattern);
-  return match ? match[0] : "Recent";
-}
-
-// Existing helper functions remain unchanged
-function extractNameFromText(text: string): string | null {
-  const lines = text.split('\n').filter(line => line.trim().length > 2);
-  const nameCandidate = lines.slice(0, 5).find(line => {
-    const trimmed = line.trim();
-    return trimmed.length > 2 && 
-           trimmed.length < 60 && 
-           !trimmed.includes('@') && 
-           !trimmed.includes('http') &&
-           /^[A-Za-z\s.'-]+$/.test(trimmed) &&
-           !trimmed.toLowerCase().includes('resume') &&
-           !trimmed.toLowerCase().includes('cv');
-  })?.trim();
-  return nameCandidate || null;
-}
-
-function extractEmailFromText(text: string): string | null {
-  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
-  return text.match(emailRegex)?.[0] || null;
-}
-
-function extractPhoneFromText(text: string): string | null {
-  const phoneRegex = /(\+\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}/;
-  return text.match(phoneRegex)?.[0] || null;
-}
-
-function extractLocationFromText(text: string): string | null {
-  const locationRegex = /([A-Za-z\s]+,\s*[A-Z]{2}|[A-Za-z\s]+,\s*[A-Za-z\s]+)/;
-  return text.match(locationRegex)?.[0] || null;
-}
-
-function extractExperienceFromText(text: string): number {
-  const experienceMatches = text.match(/(\d+)\s*(?:years?|yrs?)\s*(?:of\s*)?(?:experience|exp)/i);
-  return experienceMatches ? parseInt(experienceMatches[1]) : 0;
-}
-
-function extractSkillsFromText(text: string): string[] {
-  const skillKeywords = [
-    'JavaScript', 'Python', 'React', 'Node.js', 'Java', 'C++', 'SQL', 'HTML', 'CSS', 
-    'Git', 'AWS', 'Docker', 'TypeScript', 'Angular', 'Vue', 'MongoDB', 'PostgreSQL',
-    'PHP', 'Ruby', 'Go', 'Kotlin', 'Swift', 'Flutter', 'React Native', 'Redux',
-    'Express', 'Django', 'Spring', 'Laravel', 'Firebase', 'GraphQL', 'REST',
-    'RAG', 'LangChain', 'PyTorch', 'TensorFlow', 'Machine Learning', 'AI', 'ML',
-    'NLP', 'Computer Vision', 'Data Science', 'Analytics', 'Kubernetes'
-  ];
-  
-  return skillKeywords.filter(skill => 
-    text.toLowerCase().includes(skill.toLowerCase())
-  );
-}
-
-function extractCurrentRoleFromText(text: string): string | null {
-  const jobTitlePatterns = [
-    /(?:software|web|mobile|full.?stack|front.?end|back.?end|senior|junior|lead)\s+(?:developer|engineer|programmer)/gi,
-    /(?:data\s+scientist|machine\s+learning\s+engineer|ai\s+engineer|research\s+scientist)/gi,
-    /(?:product\s+manager|project\s+manager|engineering\s+manager)/gi
-  ];
-  
-  for (const pattern of jobTitlePatterns) {
-    const matches = text.match(pattern);
-    if (matches && matches.length > 0) {
-      return matches[0];
-    }
-  }
-  return null;
-}
-
-function extractEducationFromText(text: string): string | null {
-  const educationRegex = /(bachelor|master|phd|doctorate|bs|ms|ba|ma).*?(university|college|institute)/gi;
-  return text.match(educationRegex)?.[0] || null;
-}
-
-function extractLinkedInFromText(text: string): string | null {
-  const linkedinRegex = /linkedin\.com\/in\/[A-Za-z0-9-]+/i;
-  return text.match(linkedinRegex)?.[0] || null;
-}
-
-function extractGitHubFromText(text: string): string | null {
-  const githubRegex = /github\.com\/[A-Za-z0-9-]+/i;
-  return text.match(githubRegex)?.[0] || null;
-}

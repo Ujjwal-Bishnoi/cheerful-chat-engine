@@ -57,7 +57,6 @@ export type Database = {
           created_at: string
           education: Json | null
           email: string
-          embedding: string | null
           experience_years: number | null
           github_url: string | null
           id: string
@@ -82,7 +81,6 @@ export type Database = {
           created_at?: string
           education?: Json | null
           email: string
-          embedding?: string | null
           experience_years?: number | null
           github_url?: string | null
           id?: string
@@ -107,7 +105,6 @@ export type Database = {
           created_at?: string
           education?: Json | null
           email?: string
-          embedding?: string | null
           experience_years?: number | null
           github_url?: string | null
           id?: string
