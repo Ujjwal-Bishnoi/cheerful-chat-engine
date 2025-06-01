@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Users, Upload, MessageCircle, ThemeToggle } from "lucide-react";
+import { Search, Users, Upload, MessageCircle } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import SearchInterface from "@/components/SearchInterface";
 import CandidateResults from "@/components/CandidateResults";
 import ResumeUpload from "@/components/ResumeUpload";
