@@ -86,7 +86,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert recruiter and talent sourcer...'
+            content: 'You are an API. Only respond with valid JSON. Do not wrap the response in markdown or explanation.'
           },
           {
             role: 'user',
@@ -108,23 +108,30 @@ serve(async (req) => {
     }
 
     const groqData = await groqResponse.json();
-    const content = groqData.choices[0]?.message?.content;
+    const rawContent = groqData.choices?.[0]?.message?.content;
 
-    if (!content) {
-      console.error('❌ No content in Groq response');
+    if (!rawContent) {
+      console.error('❌ LLM returned an empty response');
       return new Response(JSON.stringify({ error: 'No valid content from LLM' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // ✅ Strip markdown-style ```json ... ``` if present
+    const cleanedContent = rawContent
+      .trim()
+      .replace(/^```(?:json)?/, '')
+      .replace(/```$/, '');
+
     let analysisResult;
+
     try {
-      analysisResult = JSON.parse(content);
-    } catch (parseError) {
-      console.error('❌ Error parsing Groq response:', parseError);
-      console.error('Raw content:', content);
-      return new Response(JSON.stringify({ error: 'Failed to parse LLM response' }), {
+      analysisResult = JSON.parse(cleanedContent);
+    } catch (err) {
+      console.error("❌ Failed to parse JSON from LLM response");
+      console.error("Raw content received:\n", rawContent);
+      return new Response(JSON.stringify({ error: 'Error parsing Groq response: ' + err.message }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
