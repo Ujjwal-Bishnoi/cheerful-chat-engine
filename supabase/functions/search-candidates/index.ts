@@ -37,19 +37,22 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an AI hiring assistant helping recruiters find candidates from a structured candidate database. Your task is to analyze the recruiter's plain-English query and convert it into search parameters.
+            content: `You are an AI hiring assistant helping recruiters find candidates from a structured candidate database. Your task is to analyze the recruiter's plain-English query and convert it into search parameters for semantic matching.
 
 Examples:
 Query: "Find senior RAG engineers in EU open to contracts"
-Output: {"keywords": ["RAG", "engineer", "senior"], "skills": ["RAG", "LangChain"], "seniority": "senior", "location": ["EU", "Europe"], "experience_min": 5}
+Output: {"keywords": ["RAG", "engineer", "senior"], "skills": ["RAG", "LangChain", "vector database"], "seniority": "senior", "location": ["EU", "Europe"], "experience_min": 5, "work_type": "contract"}
 
 Query: "Looking for GenAI researchers with PyTorch and RLHF experience in the US"
-Output: {"keywords": ["GenAI", "researcher", "PyTorch", "RLHF"], "skills": ["PyTorch", "RLHF", "GenAI"], "location": ["US", "United States"], "experience_min": 3}
+Output: {"keywords": ["GenAI", "researcher", "PyTorch", "RLHF"], "skills": ["PyTorch", "RLHF", "GenAI", "machine learning"], "location": ["US", "United States"], "experience_min": 3}
 
 Query: "Find Python developers with 3+ years experience"
 Output: {"keywords": ["Python", "developer"], "skills": ["Python"], "experience_min": 3}
 
-Return only a JSON object with extracted search parameters.`
+Query: "Show me candidates having experience in RAG"
+Output: {"keywords": ["RAG", "experience"], "skills": ["RAG", "LangChain", "vector search", "embeddings"], "experience_min": 1}
+
+Return only a JSON object with extracted search parameters. Include semantic variations of skills to improve matching.`
           },
           {
             role: 'user',
@@ -94,23 +97,39 @@ Return only a JSON object with extracted search parameters.`
         )
       `);
 
-    // Build dynamic search query
+    // Build dynamic search query with OR conditions for better matching
     const searchConditions = [];
     
-    // Search in title, summary, name
+    // Search in title, summary, name, work_experience, education
     if (searchParams.keywords && searchParams.keywords.length > 0) {
-      const keywordConditions = searchParams.keywords.map((keyword: string) => 
-        `title.ilike.%${keyword}%,summary.ilike.%${keyword}%,name.ilike.%${keyword}%`
-      ).join(',');
-      searchConditions.push(keywordConditions);
+      const keywordConditions = [];
+      searchParams.keywords.forEach((keyword) => {
+        keywordConditions.push(`title.ilike.%${keyword}%`);
+        keywordConditions.push(`summary.ilike.%${keyword}%`);
+        keywordConditions.push(`name.ilike.%${keyword}%`);
+        keywordConditions.push(`work_experience.cs.${JSON.stringify([{description: keyword}])}`);
+        keywordConditions.push(`education.cs.${JSON.stringify([{field: keyword}])}`);
+      });
+      searchConditions.push(...keywordConditions);
+    }
+
+    // Enhanced skill search
+    if (searchParams.skills && searchParams.skills.length > 0) {
+      const skillConditions = [];
+      searchParams.skills.forEach((skill) => {
+        skillConditions.push(`title.ilike.%${skill}%`);
+        skillConditions.push(`summary.ilike.%${skill}%`);
+        skillConditions.push(`work_experience.cs.${JSON.stringify([{description: skill}])}`);
+      });
+      searchConditions.push(...skillConditions);
     }
 
     // Location search
     if (searchParams.location && searchParams.location.length > 0) {
-      const locationConditions = searchParams.location.map((loc: string) => 
+      const locationConditions = searchParams.location.map((loc) => 
         `location.ilike.%${loc}%`
-      ).join(',');
-      searchConditions.push(locationConditions);
+      );
+      searchConditions.push(...locationConditions);
     }
 
     // Experience filter
@@ -118,12 +137,21 @@ Return only a JSON object with extracted search parameters.`
       candidatesQuery = candidatesQuery.gte('experience_years', searchParams.experience_min);
     }
 
+    // Availability filter
+    if (searchParams.work_type) {
+      if (searchParams.work_type.toLowerCase().includes('contract')) {
+        candidatesQuery = candidatesQuery.eq('availability', 'contract_only');
+      } else if (searchParams.work_type.toLowerCase().includes('full')) {
+        candidatesQuery = candidatesQuery.in('availability', ['actively_looking', 'open_to_offers']);
+      }
+    }
+
     // Apply OR conditions
     if (searchConditions.length > 0) {
       candidatesQuery = candidatesQuery.or(searchConditions.join(','));
     }
 
-    const { data: candidates, error: searchError } = await candidatesQuery.limit(20);
+    const { data: candidates, error: searchError } = await candidatesQuery.limit(50);
 
     if (searchError) {
       console.error('Search error:', searchError);
@@ -132,33 +160,45 @@ Return only a JSON object with extracted search parameters.`
 
     // Transform the data to include skills array and calculate relevance score
     const transformedCandidates = candidates?.map(candidate => {
-      const skills = candidate.candidate_skills?.map((cs: any) => cs.skills?.name).filter(Boolean) || [];
+      const skills = candidate.candidate_skills?.map((cs) => cs.skills?.name).filter(Boolean) || [];
       
       // Calculate relevance score based on matches
       let score = 60; // Base score
       
-      // Skill matches
+      // Skill matches (higher weight)
       if (searchParams.skills) {
-        const skillMatches = searchParams.skills.filter((skill: string) => 
+        const skillMatches = searchParams.skills.filter((skill) => 
           skills.some(candidateSkill => 
             candidateSkill.toLowerCase().includes(skill.toLowerCase())
-          )
+          ) ||
+          candidate.title?.toLowerCase().includes(skill.toLowerCase()) ||
+          candidate.summary?.toLowerCase().includes(skill.toLowerCase())
         ).length;
-        score += skillMatches * 15;
+        score += skillMatches * 20;
       }
 
       // Experience bonus
       if (searchParams.experience_min && candidate.experience_years >= searchParams.experience_min) {
-        score += 10;
+        score += 15;
       }
 
-      // Keyword matches in title/summary
+      // Keyword matches in title/summary/work experience
       if (searchParams.keywords) {
         const titleSummaryText = `${candidate.title} ${candidate.summary}`.toLowerCase();
-        const keywordMatches = searchParams.keywords.filter((keyword: string) => 
-          titleSummaryText.includes(keyword.toLowerCase())
+        const workExperienceText = JSON.stringify(candidate.work_experience || []).toLowerCase();
+        const keywordMatches = searchParams.keywords.filter((keyword) => 
+          titleSummaryText.includes(keyword.toLowerCase()) ||
+          workExperienceText.includes(keyword.toLowerCase())
         ).length;
         score += keywordMatches * 10;
+      }
+
+      // Location bonus
+      if (searchParams.location && candidate.location) {
+        const locationMatches = searchParams.location.some(loc => 
+          candidate.location.toLowerCase().includes(loc.toLowerCase())
+        );
+        if (locationMatches) score += 10;
       }
 
       return {
@@ -168,16 +208,18 @@ Return only a JSON object with extracted search parameters.`
       };
     }) || [];
 
-    // Sort by relevance score
-    transformedCandidates.sort((a, b) => b.score - a.score);
+    // Sort by relevance score and filter for minimum relevance
+    const filteredCandidates = transformedCandidates
+      .filter(candidate => candidate.score >= 70) // Only show relevant matches
+      .sort((a, b) => b.score - a.score);
 
-    const summary = `Found ${transformedCandidates.length} candidates matching "${query}". Results ranked by AI relevance score.`;
+    const summary = `Found ${filteredCandidates.length} candidates matching "${query}". Results ranked by AI relevance score.`;
 
     return new Response(JSON.stringify({
       success: true,
-      candidates: transformedCandidates,
+      candidates: filteredCandidates,
       summary,
-      count: transformedCandidates.length
+      count: filteredCandidates.length
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

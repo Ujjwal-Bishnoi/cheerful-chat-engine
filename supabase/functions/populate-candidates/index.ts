@@ -11,417 +11,6 @@ const corsHeaders = {
 const supabaseUrl = 'https://ocmqqtgcadltakzuwixd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jbXFxdGdjYWRsdGFrenV3aXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2MjU0MjYsImV4cCI6MjA2NDIwMTQyNn0.u_L1ruz6-gE9q8uuH9bKAZzpUX2IqLoP5qmgTgSd_fQ';
 
-const sampleCandidates = [
-  {
-    name: "Sarah Chen",
-    email: "sarah.chen@example.com",
-    title: "Senior RAG Engineer",
-    location: "San Francisco, CA",
-    summary: "Experienced AI engineer specializing in Retrieval-Augmented Generation systems. Built large-scale RAG pipelines for enterprise applications.",
-    experience_years: 7,
-    availability: "actively_looking",
-    verified: true,
-    verification_score: 95,
-    skills: ["RAG", "LangChain", "Python", "Vector Databases", "OpenAI"],
-    work_experience: [
-      {
-        company: "OpenAI",
-        role: "Senior ML Engineer",
-        duration: "2022-2024",
-        description: "Led RAG system development for GPT applications"
-      }
-    ],
-    education: [
-      {
-        institution: "Stanford University",
-        degree: "MS",
-        field: "Computer Science",
-        year: "2019"
-      }
-    ]
-  },
-  {
-    name: "Marcus Rodriguez",
-    email: "marcus.r@example.com", 
-    title: "Full Stack Python Developer",
-    location: "Austin, TX",
-    summary: "Full-stack developer with expertise in Python, Django, and React. Experience building scalable web applications and APIs.",
-    experience_years: 5,
-    availability: "open_to_offers",
-    verified: true,
-    verification_score: 88,
-    skills: ["Python", "Django", "React", "PostgreSQL", "AWS"],
-    work_experience: [
-      {
-        company: "Meta",
-        role: "Software Engineer",
-        duration: "2021-2024",
-        description: "Built internal tools and APIs for data processing"
-      }
-    ]
-  },
-  {
-    name: "Emily Johnson",
-    email: "emily.johnson@example.com",
-    title: "GenAI Research Scientist", 
-    location: "Boston, MA",
-    summary: "Research scientist focused on generative AI, with publications in RLHF and large language model training.",
-    experience_years: 6,
-    availability: "actively_looking",
-    verified: true,
-    verification_score: 97,
-    skills: ["PyTorch", "RLHF", "GenAI", "Machine Learning", "Deep Learning"],
-    work_experience: [
-      {
-        company: "DeepMind",
-        role: "Research Scientist",
-        duration: "2020-2024",
-        description: "Research on reinforcement learning from human feedback"
-      }
-    ]
-  },
-  {
-    name: "David Kim",
-    email: "david.kim@example.com",
-    title: "Senior React Developer",
-    location: "Seattle, WA", 
-    summary: "Frontend architect with deep React expertise. Led development of complex UI systems for enterprise applications.",
-    experience_years: 8,
-    availability: "contract_only",
-    verified: true,
-    verification_score: 91,
-    skills: ["React", "TypeScript", "Next.js", "GraphQL", "Node.js"],
-    work_experience: [
-      {
-        company: "Netflix",
-        role: "Senior Frontend Engineer",
-        duration: "2019-2024",
-        description: "Built and maintained Netflix's web interface"
-      }
-    ]
-  },
-  {
-    name: "Priya Patel",
-    email: "priya.patel@example.com",
-    title: "Machine Learning Engineer",
-    location: "New York, NY",
-    summary: "ML engineer specializing in computer vision and NLP. Experience with production ML systems at scale.",
-    experience_years: 4,
-    availability: "actively_looking",
-    verified: true,
-    verification_score: 89,
-    skills: ["Machine Learning", "TensorFlow", "Computer Vision", "NLP", "Python"],
-    work_experience: [
-      {
-        company: "Google",
-        role: "ML Engineer",
-        duration: "2021-2024", 
-        description: "Developed ML models for Google Search"
-      }
-    ]
-  },
-  {
-    name: "Alex Thompson",
-    email: "alex.thompson@example.com",
-    title: "DevOps Engineering Lead",
-    location: "Denver, CO",
-    summary: "DevOps leader with expertise in cloud infrastructure, Kubernetes, and CI/CD. Built scalable deployment pipelines.",
-    experience_years: 9,
-    availability: "open_to_offers",
-    verified: true,
-    verification_score: 93,
-    skills: ["Kubernetes", "AWS", "Docker", "Terraform", "CI/CD"],
-    work_experience: [
-      {
-        company: "Uber",
-        role: "Staff DevOps Engineer",
-        duration: "2018-2024",
-        description: "Led infrastructure scaling for ride-sharing platform"
-      }
-    ]
-  },
-  {
-    name: "Jessica Wong",
-    email: "jessica.wong@example.com",
-    title: "Senior Backend Engineer",
-    location: "Toronto, CA",
-    summary: "Backend engineer with expertise in distributed systems and microservices architecture. Strong Java and Go experience.",
-    experience_years: 6,
-    availability: "actively_looking",
-    verified: true,
-    verification_score: 90,
-    skills: ["Java", "Go", "Microservices", "Redis", "Apache Kafka"],
-    work_experience: [
-      {
-        company: "Shopify",
-        role: "Senior Backend Engineer",
-        duration: "2020-2024",
-        description: "Built payment processing microservices"
-      }
-    ]
-  },
-  {
-    name: "Michael Brown",
-    email: "michael.brown@example.com",
-    title: "Data Science Manager",
-    location: "Chicago, IL",
-    summary: "Data science leader with experience managing teams and building ML products. Strong background in statistics and analytics.",
-    experience_years: 10,
-    availability: "open_to_offers",
-    verified: true,
-    verification_score: 94,
-    skills: ["Data Science", "R", "Python", "SQL", "Machine Learning"],
-    work_experience: [
-      {
-        company: "Airbnb",
-        role: "Senior Data Scientist",
-        duration: "2017-2024",
-        description: "Led pricing and recommendation algorithms"
-      }
-    ]
-  },
-  {
-    name: "Lisa Garcia",
-    email: "lisa.garcia@example.com",
-    title: "Mobile Development Lead",
-    location: "Los Angeles, CA",
-    summary: "Mobile development expert with iOS and Android experience. Led teams building consumer mobile applications.",
-    experience_years: 7,
-    availability: "contract_only",
-    verified: true,
-    verification_score: 87,
-    skills: ["iOS", "Android", "Swift", "Kotlin", "React Native"],
-    work_experience: [
-      {
-        company: "Spotify",
-        role: "Mobile Team Lead",
-        duration: "2019-2024",
-        description: "Led mobile app development for music streaming"
-      }
-    ]
-  },
-  {
-    name: "Robert Taylor",
-    email: "robert.taylor@example.com",
-    title: "Cloud Solutions Architect",
-    location: "Phoenix, AZ",
-    summary: "Cloud architect specializing in AWS and Azure. Designed enterprise cloud migrations and serverless architectures.",
-    experience_years: 11,
-    availability: "open_to_offers",
-    verified: true,
-    verification_score: 96,
-    skills: ["AWS", "Azure", "Serverless", "Lambda", "CloudFormation"],
-    work_experience: [
-      {
-        company: "Microsoft",
-        role: "Principal Cloud Architect",
-        duration: "2016-2024",
-        description: "Designed cloud solutions for enterprise customers"
-      }
-    ]
-  },
-  {
-    name: "Amanda Lee",
-    email: "amanda.lee@example.com",
-    title: "Product Manager - AI",
-    location: "Portland, OR",
-    summary: "Product manager with focus on AI/ML products. Experience launching AI features and managing cross-functional teams.",
-    experience_years: 8,
-    availability: "actively_looking",
-    verified: true,
-    verification_score: 85,
-    skills: ["Product Management", "AI/ML", "Agile", "Data Analytics", "User Research"],
-    work_experience: [
-      {
-        company: "Slack",
-        role: "Senior Product Manager",
-        duration: "2019-2024",
-        description: "Led AI-powered search and recommendations"
-      }
-    ]
-  },
-  {
-    name: "James Wilson",
-    email: "james.wilson@example.com",
-    title: "Senior Security Engineer",
-    location: "Washington, DC",
-    summary: "Cybersecurity engineer with expertise in threat detection and incident response. Strong background in penetration testing.",
-    experience_years: 9,
-    availability: "open_to_offers",
-    verified: true,
-    verification_score: 92,
-    skills: ["Cybersecurity", "Penetration Testing", "SIEM", "Threat Detection", "Python"],
-    work_experience: [
-      {
-        company: "CrowdStrike",
-        role: "Senior Security Engineer",
-        duration: "2018-2024",
-        description: "Built threat detection algorithms"
-      }
-    ]
-  },
-  {
-    name: "Nina Kowalski",
-    email: "nina.kowalski@example.com",
-    title: "UX Design Lead",
-    location: "Berlin, Germany",
-    summary: "UX design leader with experience in B2B and consumer products. Strong background in user research and design systems.",
-    experience_years: 6,
-    availability: "actively_looking",
-    verified: true,
-    verification_score: 88,
-    skills: ["UX Design", "User Research", "Figma", "Design Systems", "Prototyping"],
-    work_experience: [
-      {
-        company: "SAP",
-        role: "UX Design Lead", 
-        duration: "2020-2024",
-        description: "Led design for enterprise software products"
-      }
-    ]
-  },
-  {
-    name: "Carlos Mendez",
-    email: "carlos.mendez@example.com",
-    title: "Blockchain Developer",
-    location: "Miami, FL",
-    summary: "Blockchain developer with expertise in Ethereum and DeFi protocols. Experience building smart contracts and dApps.",
-    experience_years: 4,
-    availability: "contract_only",
-    verified: true,
-    verification_score: 86,
-    skills: ["Solidity", "Ethereum", "Web3", "Smart Contracts", "DeFi"],
-    work_experience: [
-      {
-        company: "Coinbase",
-        role: "Blockchain Engineer",
-        duration: "2021-2024",
-        description: "Built DeFi trading protocols"
-      }
-    ]
-  },
-  {
-    name: "Rachel Green",
-    email: "rachel.green@example.com",
-    title: "Site Reliability Engineer",
-    location: "San Diego, CA",
-    summary: "SRE with expertise in system monitoring, automation, and incident response. Strong background in distributed systems.",
-    experience_years: 5,
-    availability: "open_to_offers",
-    verified: true,
-    verification_score: 91,
-    skills: ["SRE", "Monitoring", "Automation", "Linux", "Python"],
-    work_experience: [
-      {
-        company: "Datadog",
-        role: "Site Reliability Engineer",
-        duration: "2020-2024",
-        description: "Maintained monitoring infrastructure"
-      }
-    ]
-  },
-  {
-    name: "Kevin Zhang",
-    email: "kevin.zhang@example.com",
-    title: "Quantitative Developer",
-    location: "New York, NY",
-    summary: "Quantitative developer with finance background. Experience building trading algorithms and risk management systems.",
-    experience_years: 7,
-    availability: "actively_looking",
-    verified: true,
-    verification_score: 94,
-    skills: ["C++", "Python", "Finance", "Algorithms", "Statistics"],
-    work_experience: [
-      {
-        company: "Goldman Sachs",
-        role: "Quantitative Developer",
-        duration: "2018-2024",
-        description: "Built algorithmic trading systems"
-      }
-    ]
-  },
-  {
-    name: "Sophia Martin",
-    email: "sophia.martin@example.com",
-    title: "Engineering Manager",
-    location: "Atlanta, GA",
-    summary: "Engineering manager with experience leading large teams. Strong technical background in full-stack development.",
-    experience_years: 12,
-    availability: "open_to_offers",
-    verified: true,
-    verification_score: 95,
-    skills: ["Engineering Management", "Leadership", "Full Stack", "Team Building", "Strategy"],
-    work_experience: [
-      {
-        company: "Stripe",
-        role: "Engineering Manager",
-        duration: "2017-2024",
-        description: "Led payments infrastructure team"
-      }
-    ]
-  },
-  {
-    name: "Daniel Rodriguez",
-    email: "daniel.rodriguez@example.com",
-    title: "Game Developer",
-    location: "Los Angeles, CA",
-    summary: "Game developer with expertise in Unity and Unreal Engine. Experience shipping mobile and console games.",
-    experience_years: 6,
-    availability: "contract_only",
-    verified: true,
-    verification_score: 89,
-    skills: ["Unity", "Unreal Engine", "C#", "Game Design", "3D Graphics"],
-    work_experience: [
-      {
-        company: "Riot Games",
-        role: "Senior Game Developer",
-        duration: "2019-2024",
-        description: "Developed gameplay features for League of Legends"
-      }
-    ]
-  },
-  {
-    name: "Natasha Petrov",
-    email: "natasha.petrov@example.com",
-    title: "Computer Vision Engineer",
-    location: "Cambridge, MA",
-    summary: "Computer vision engineer with PhD in machine learning. Experience with autonomous vehicles and medical imaging.",
-    experience_years: 8,
-    availability: "actively_looking",
-    verified: true,
-    verification_score: 97,
-    skills: ["Computer Vision", "OpenCV", "PyTorch", "Medical Imaging", "Autonomous Vehicles"],
-    work_experience: [
-      {
-        company: "Waymo",
-        role: "Computer Vision Engineer",
-        duration: "2018-2024",
-        description: "Developed perception systems for self-driving cars"
-      }
-    ]
-  },
-  {
-    name: "Ahmed Hassan",
-    email: "ahmed.hassan@example.com",
-    title: "Database Administrator",
-    location: "Houston, TX",
-    summary: "Senior DBA with expertise in PostgreSQL, MongoDB, and database optimization. Experience with large-scale data systems.",
-    experience_years: 10,
-    availability: "open_to_offers",
-    verified: true,
-    verification_score: 93,
-    skills: ["PostgreSQL", "MongoDB", "Database Optimization", "SQL", "Data Modeling"],
-    work_experience: [
-      {
-        company: "Oracle",
-        role: "Senior Database Administrator",
-        duration: "2016-2024",
-        description: "Managed enterprise database systems"
-      }
-    ]
-  }
-];
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -430,53 +19,651 @@ serve(async (req) => {
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('Starting to populate candidates...');
+    const newCandidates = [
+      {
+        name: "Sarah Chen",
+        email: "sarah.chen@email.com",
+        title: "Senior RAG Engineer",
+        location: "San Francisco, CA",
+        experience_years: 6,
+        summary: "Expert in Retrieval-Augmented Generation systems with extensive experience in LangChain, vector databases, and semantic search. Built production RAG systems serving millions of queries.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 92,
+        work_experience: [
+          {
+            role: "Senior RAG Engineer",
+            company: "AI Research Lab",
+            duration: "2022-2024",
+            description: "Led development of enterprise RAG systems using LangChain and Pinecone. Improved retrieval accuracy by 35%."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Computer Science",
+            institution: "Stanford University",
+            year: "2020"
+          }
+        ],
+        languages: ["English", "Mandarin"]
+      },
+      {
+        name: "Marcus Rodriguez",
+        email: "marcus.rodriguez@email.com",
+        title: "GenAI Research Scientist",
+        location: "Austin, TX",
+        experience_years: 8,
+        summary: "Research scientist specializing in generative AI, PyTorch, and RLHF. Published 15+ papers on transformer architectures and reinforcement learning from human feedback.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 96,
+        work_experience: [
+          {
+            role: "Principal Research Scientist",
+            company: "DeepMind",
+            duration: "2020-2024",
+            description: "Research on large language models, RLHF, and alignment. Led team of 8 researchers working on GPT-4 competitor models."
+          }
+        ],
+        education: [
+          {
+            degree: "PhD",
+            field: "Machine Learning",
+            institution: "MIT",
+            year: "2018"
+          }
+        ],
+        languages: ["English", "Spanish"]
+      },
+      {
+        name: "Emily Watson",
+        email: "emily.watson@email.com",
+        title: "Full Stack Developer",
+        location: "Remote (EU)",
+        experience_years: 5,
+        summary: "Remote-friendly full-stack developer with expertise in React, Node.js, and cloud infrastructure. Strong background in building scalable web applications.",
+        availability: "contract_only",
+        verified: true,
+        verification_score: 88,
+        work_experience: [
+          {
+            role: "Senior Full Stack Developer",
+            company: "TechCorp",
+            duration: "2021-2024",
+            description: "Built and maintained React applications serving 100k+ users. Implemented CI/CD pipelines and microservices architecture."
+          }
+        ],
+        education: [
+          {
+            degree: "BS",
+            field: "Software Engineering",
+            institution: "University of Edinburgh",
+            year: "2019"
+          }
+        ],
+        languages: ["English", "French"]
+      },
+      {
+        name: "David Kim",
+        email: "david.kim@email.com",
+        title: "Engineering Lead",
+        location: "Seattle, WA",
+        experience_years: 10,
+        summary: "Experienced engineering leader with startup background. Led teams of 15+ engineers in scaling applications from prototype to IPO.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 94,
+        work_experience: [
+          {
+            role: "VP of Engineering",
+            company: "StartupXYZ",
+            duration: "2020-2024",
+            description: "Scaled engineering team from 5 to 50 people. Led company through Series A to IPO, managing technical infrastructure for 10M+ users."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Computer Science",
+            institution: "University of Washington",
+            year: "2014"
+          }
+        ],
+        languages: ["English", "Korean"]
+      },
+      {
+        name: "Anna Kowalski",
+        email: "anna.kowalski@email.com",
+        title: "Machine Learning Engineer",
+        location: "Berlin, Germany",
+        experience_years: 4,
+        summary: "ML engineer specializing in computer vision and deep learning. Experience with PyTorch, TensorFlow, and production ML systems.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 87,
+        work_experience: [
+          {
+            role: "ML Engineer",
+            company: "Vision AI",
+            duration: "2022-2024",
+            description: "Developed computer vision models for autonomous vehicles. Improved object detection accuracy by 25% using custom PyTorch implementations."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Artificial Intelligence",
+            institution: "Technical University of Munich",
+            year: "2020"
+          }
+        ],
+        languages: ["English", "German", "Polish"]
+      },
+      {
+        name: "James Thompson",
+        email: "james.thompson@email.com",
+        title: "Frontend Developer",
+        location: "London, UK",
+        experience_years: 7,
+        summary: "TypeScript expert with deep knowledge of React ecosystem. Passionate about user experience and modern frontend architecture.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 91,
+        work_experience: [
+          {
+            role: "Senior Frontend Developer",
+            company: "FinTech Solutions",
+            duration: "2021-2024",
+            description: "Led frontend development for trading platform used by 50k+ traders. Built complex real-time dashboards with React and TypeScript."
+          }
+        ],
+        education: [
+          {
+            degree: "BS",
+            field: "Computer Science",
+            institution: "Imperial College London",
+            year: "2017"
+          }
+        ],
+        languages: ["English"]
+      },
+      {
+        name: "Lisa Zhang",
+        email: "lisa.zhang@email.com",
+        title: "Data Scientist",
+        location: "Toronto, Canada",
+        experience_years: 6,
+        summary: "Data scientist with expertise in NLP, time series analysis, and MLOps. Experience building production ML pipelines at scale.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 89,
+        work_experience: [
+          {
+            role: "Senior Data Scientist",
+            company: "DataCorp",
+            duration: "2020-2024",
+            description: "Built recommendation systems and NLP models serving 1M+ users. Implemented MLOps practices reducing model deployment time by 60%."
+          }
+        ],
+        education: [
+          {
+            degree: "PhD",
+            field: "Statistics",
+            institution: "University of Toronto",
+            year: "2018"
+          }
+        ],
+        languages: ["English", "Mandarin", "French"]
+      },
+      {
+        name: "Roberto Silva",
+        email: "roberto.silva@email.com",
+        title: "DevOps Engineer",
+        location: "São Paulo, Brazil",
+        experience_years: 8,
+        summary: "DevOps specialist with expertise in Kubernetes, AWS, and infrastructure automation. Built CI/CD pipelines for high-traffic applications.",
+        availability: "contract_only",
+        verified: true,
+        verification_score: 93,
+        work_experience: [
+          {
+            role: "Principal DevOps Engineer",
+            company: "CloudTech",
+            duration: "2019-2024",
+            description: "Designed and implemented cloud infrastructure for fintech applications. Managed Kubernetes clusters serving 500+ microservices."
+          }
+        ],
+        education: [
+          {
+            degree: "BS",
+            field: "Information Systems",
+            institution: "University of São Paulo",
+            year: "2016"
+          }
+        ],
+        languages: ["Portuguese", "English", "Spanish"]
+      },
+      {
+        name: "Michael O'Connor",
+        email: "michael.oconnor@email.com",
+        title: "Blockchain Developer",
+        location: "Dublin, Ireland",
+        experience_years: 5,
+        summary: "Blockchain developer specializing in Ethereum, Solidity, and DeFi protocols. Built smart contracts handling $100M+ in transactions.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 86,
+        work_experience: [
+          {
+            role: "Senior Blockchain Developer",
+            company: "CryptoFin",
+            duration: "2021-2024",
+            description: "Developed DeFi protocols and smart contracts. Led security audits and gas optimization resulting in 40% cost reduction."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Cryptography",
+            institution: "Trinity College Dublin",
+            year: "2019"
+          }
+        ],
+        languages: ["English", "Irish"]
+      },
+      {
+        name: "Priya Patel",
+        email: "priya.patel@email.com",
+        title: "Product Manager",
+        location: "Mumbai, India",
+        experience_years: 9,
+        summary: "Technical product manager with B2B SaaS experience. Led product strategy for AI-powered analytics platform with 10k+ enterprise users.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 90,
+        work_experience: [
+          {
+            role: "Senior Product Manager",
+            company: "Analytics Pro",
+            duration: "2020-2024",
+            description: "Led product roadmap for enterprise analytics platform. Increased user engagement by 45% through AI-powered insights features."
+          }
+        ],
+        education: [
+          {
+            degree: "MBA",
+            field: "Technology Management",
+            institution: "Indian Institute of Management",
+            year: "2015"
+          }
+        ],
+        languages: ["English", "Hindi", "Gujarati"]
+      },
+      {
+        name: "Alex Petrov",
+        email: "alex.petrov@email.com",
+        title: "Security Engineer",
+        location: "Prague, Czech Republic",
+        experience_years: 7,
+        summary: "Cybersecurity expert specializing in application security, penetration testing, and secure code review. CISSP certified with SOC 2 compliance experience.",
+        availability: "contract_only",
+        verified: true,
+        verification_score: 88,
+        work_experience: [
+          {
+            role: "Lead Security Engineer",
+            company: "SecureTech",
+            duration: "2020-2024",
+            description: "Led security team for fintech applications. Implemented zero-trust architecture and reduced security incidents by 70%."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Cybersecurity",
+            institution: "Czech Technical University",
+            year: "2017"
+          }
+        ],
+        languages: ["English", "Czech", "Russian"]
+      },
+      {
+        name: "Sofia Martinez",
+        email: "sofia.martinez@email.com",
+        title: "UX Designer",
+        location: "Barcelona, Spain",
+        experience_years: 6,
+        summary: "Senior UX designer with expertise in design systems, user research, and accessibility. Led design for award-winning mobile applications.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 85,
+        work_experience: [
+          {
+            role: "Senior UX Designer",
+            company: "DesignStudio",
+            duration: "2021-2024",
+            description: "Led UX design for mobile banking app with 2M+ users. Improved user satisfaction scores by 35% through research-driven design."
+          }
+        ],
+        education: [
+          {
+            degree: "MA",
+            field: "Interaction Design",
+            institution: "Elisava Barcelona",
+            year: "2018"
+          }
+        ],
+        languages: ["Spanish", "English", "Catalan"]
+      },
+      {
+        name: "Kevin Anderson",
+        email: "kevin.anderson@email.com",
+        title: "Mobile Developer",
+        location: "Vancouver, Canada",
+        experience_years: 5,
+        summary: "Mobile developer specializing in React Native and native iOS/Android development. Built cross-platform apps with 1M+ downloads.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 87,
+        work_experience: [
+          {
+            role: "Senior Mobile Developer",
+            company: "MobileFirst",
+            duration: "2022-2024",
+            description: "Developed React Native apps for e-commerce and fitness tracking. Optimized performance achieving 4.8+ app store ratings."
+          }
+        ],
+        education: [
+          {
+            degree: "BS",
+            field: "Computer Science",
+            institution: "University of British Columbia",
+            year: "2019"
+          }
+        ],
+        languages: ["English", "French"]
+      },
+      {
+        name: "Yuki Tanaka",
+        email: "yuki.tanaka@email.com",
+        title: "AI Research Engineer",
+        location: "Tokyo, Japan",
+        experience_years: 4,
+        summary: "AI researcher focused on transformer architectures, multimodal AI, and computer vision. Published research on attention mechanisms and vision transformers.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 94,
+        work_experience: [
+          {
+            role: "AI Research Engineer",
+            company: "AI Labs Tokyo",
+            duration: "2022-2024",
+            description: "Research on vision transformers and multimodal AI. Developed novel attention mechanisms improving image classification accuracy by 12%."
+          }
+        ],
+        education: [
+          {
+            degree: "PhD",
+            field: "Artificial Intelligence",
+            institution: "University of Tokyo",
+            year: "2020"
+          }
+        ],
+        languages: ["Japanese", "English"]
+      },
+      {
+        name: "Thomas Mueller",
+        email: "thomas.mueller@email.com",
+        title: "Backend Developer",
+        location: "Munich, Germany",
+        experience_years: 8,
+        summary: "Backend specialist with expertise in microservices, Go, and distributed systems. Built high-performance APIs serving 100M+ requests daily.",
+        availability: "contract_only",
+        verified: true,
+        verification_score: 91,
+        work_experience: [
+          {
+            role: "Principal Backend Engineer",
+            company: "CloudScale",
+            duration: "2019-2024",
+            description: "Architected microservices platform handling 100M+ daily requests. Led migration from monolith to microservices reducing latency by 50%."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Distributed Systems",
+            institution: "Technical University of Munich",
+            year: "2016"
+          }
+        ],
+        languages: ["German", "English"]
+      },
+      {
+        name: "Isabella Costa",
+        email: "isabella.costa@email.com",
+        title: "Data Engineer",
+        location: "Lisbon, Portugal",
+        experience_years: 6,
+        summary: "Data engineer specializing in Apache Spark, Kafka, and real-time data processing. Built data pipelines processing TB-scale datasets.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 89,
+        work_experience: [
+          {
+            role: "Senior Data Engineer",
+            company: "DataFlow",
+            duration: "2021-2024",
+            description: "Built real-time data pipelines using Spark and Kafka. Processed 10TB+ daily data for ML model training and analytics."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Data Science",
+            institution: "University of Porto",
+            year: "2018"
+          }
+        ],
+        languages: ["Portuguese", "English", "Spanish"]
+      },
+      {
+        name: "Oliver Williams",
+        email: "oliver.williams@email.com",
+        title: "Site Reliability Engineer",
+        location: "Sydney, Australia",
+        experience_years: 7,
+        summary: "SRE with expertise in monitoring, incident response, and system reliability. Maintained 99.99% uptime for critical financial services infrastructure.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 92,
+        work_experience: [
+          {
+            role: "Senior SRE",
+            company: "FinanceAI",
+            duration: "2020-2024",
+            description: "Maintained trading systems with 99.99% uptime. Implemented monitoring and alerting reducing MTTR by 60%."
+          }
+        ],
+        education: [
+          {
+            degree: "BS",
+            field: "Computer Engineering",
+            institution: "University of Sydney",
+            year: "2017"
+          }
+        ],
+        languages: ["English"]
+      },
+      {
+        name: "Marie Dubois",
+        email: "marie.dubois@email.com",
+        title: "Quantum Computing Researcher",
+        location: "Paris, France",
+        experience_years: 5,
+        summary: "Quantum computing researcher with expertise in quantum algorithms, Qiskit, and quantum machine learning. PhD in quantum information theory.",
+        availability: "open_to_offers",
+        verified: true,
+        verification_score: 96,
+        work_experience: [
+          {
+            role: "Quantum Research Scientist",
+            company: "Quantum Labs",
+            duration: "2022-2024",
+            description: "Research on quantum machine learning algorithms. Developed novel quantum optimization algorithms showing 10x speedup for specific problems."
+          }
+        ],
+        education: [
+          {
+            degree: "PhD",
+            field: "Quantum Information",
+            institution: "Sorbonne University",
+            year: "2019"
+          }
+        ],
+        languages: ["French", "English"]
+      },
+      {
+        name: "Ahmed Hassan",
+        email: "ahmed.hassan@email.com",
+        title: "Cloud Architect",
+        location: "Dubai, UAE",
+        experience_years: 9,
+        summary: "Cloud architect specializing in multi-cloud strategies, Azure, and enterprise migrations. Led cloud transformations for Fortune 500 companies.",
+        availability: "contract_only",
+        verified: true,
+        verification_score: 93,
+        work_experience: [
+          {
+            role: "Principal Cloud Architect",
+            company: "CloudConsult",
+            duration: "2020-2024",
+            description: "Led cloud migration projects for enterprise clients. Designed multi-cloud architectures reducing infrastructure costs by 40%."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Cloud Computing",
+            institution: "American University of Dubai",
+            year: "2015"
+          }
+        ],
+        languages: ["Arabic", "English"]
+      },
+      {
+        name: "Rachel Green",
+        email: "rachel.green@email.com",
+        title: "NLP Engineer",
+        location: "Boston, MA",
+        experience_years: 4,
+        summary: "NLP engineer specializing in transformer models, BERT, and conversational AI. Built chatbots and language models for enterprise applications.",
+        availability: "actively_looking",
+        verified: true,
+        verification_score: 88,
+        work_experience: [
+          {
+            role: "NLP Engineer",
+            company: "ConversationAI",
+            duration: "2022-2024",
+            description: "Developed enterprise chatbots using BERT and GPT models. Improved conversation quality metrics by 30% through fine-tuning and RLHF."
+          }
+        ],
+        education: [
+          {
+            degree: "MS",
+            field: "Computational Linguistics",
+            institution: "Harvard University",
+            year: "2020"
+          }
+        ],
+        languages: ["English"]
+      }
+    ];
 
-    for (const candidateData of sampleCandidates) {
-      const { skills, ...candidateInfo } = candidateData;
-
-      // Insert candidate
-      const { data: candidate, error: candidateError } = await supabase
+    // Insert candidates
+    for (const candidate of newCandidates) {
+      const { data: candidateData, error: candidateError } = await supabase
         .from('candidates')
-        .insert(candidateInfo)
+        .insert(candidate)
         .select()
         .single();
 
       if (candidateError) {
-        console.error('Error inserting candidate:', candidateError);
+        console.error('Error inserting candidate:', candidate.name, candidateError);
         continue;
       }
 
-      console.log('Inserted candidate:', candidate.name);
+      // Define skills for each candidate
+      const candidateSkills = {
+        "sarah.chen@email.com": ["RAG", "LangChain", "Vector Databases", "Python", "Pinecone", "Semantic Search"],
+        "marcus.rodriguez@email.com": ["PyTorch", "RLHF", "Transformers", "Python", "Research", "GenAI"],
+        "emily.watson@email.com": ["React", "Node.js", "TypeScript", "JavaScript", "Cloud", "Full Stack"],
+        "david.kim@email.com": ["Leadership", "Management", "Scaling", "Architecture", "Strategy", "Startups"],
+        "anna.kowalski@email.com": ["PyTorch", "TensorFlow", "Computer Vision", "Deep Learning", "Python", "ML"],
+        "james.thompson@email.com": ["TypeScript", "React", "Frontend", "JavaScript", "UI/UX", "Modern Frontend"],
+        "lisa.zhang@email.com": ["NLP", "MLOps", "Python", "Machine Learning", "Data Science", "Statistics"],
+        "roberto.silva@email.com": ["Kubernetes", "AWS", "DevOps", "CI/CD", "Infrastructure", "Docker"],
+        "michael.oconnor@email.com": ["Blockchain", "Solidity", "Ethereum", "DeFi", "Smart Contracts", "Web3"],
+        "priya.patel@email.com": ["Product Management", "Strategy", "AI", "B2B SaaS", "Analytics", "Leadership"],
+        "alex.petrov@email.com": ["Cybersecurity", "Penetration Testing", "Security", "SOC 2", "CISSP", "DevSecOps"],
+        "sofia.martinez@email.com": ["UX Design", "UI Design", "User Research", "Accessibility", "Design Systems", "Figma"],
+        "kevin.anderson@email.com": ["React Native", "iOS", "Android", "Mobile", "JavaScript", "Cross-platform"],
+        "yuki.tanaka@email.com": ["AI Research", "Transformers", "Computer Vision", "Python", "PyTorch", "Research"],
+        "thomas.mueller@email.com": ["Go", "Microservices", "Backend", "Distributed Systems", "APIs", "Performance"],
+        "isabella.costa@email.com": ["Apache Spark", "Kafka", "Data Engineering", "Python", "ETL", "Big Data"],
+        "oliver.williams@email.com": ["SRE", "Monitoring", "Reliability", "Infrastructure", "Incident Response", "DevOps"],
+        "marie.dubois@email.com": ["Quantum Computing", "Qiskit", "Python", "Research", "Quantum ML", "Algorithms"],
+        "ahmed.hassan@email.com": ["Cloud Architecture", "Azure", "Multi-cloud", "Enterprise", "Migration", "Strategy"],
+        "rachel.green@email.com": ["NLP", "BERT", "Transformers", "Chatbots", "Python", "Conversational AI"]
+      };
 
-      // Insert skills for this candidate
-      if (skills && skills.length > 0) {
-        for (const skillName of skills) {
-          // Insert or get skill
-          const { data: skill } = await supabase
+      // Get or create skills and link to candidate
+      const skills = candidateSkills[candidate.email] || [];
+      for (const skillName of skills) {
+        // Get or create skill
+        let { data: skillData, error: skillSelectError } = await supabase
+          .from('skills')
+          .select('id')
+          .eq('name', skillName)
+          .single();
+
+        if (skillSelectError || !skillData) {
+          const { data: newSkillData, error: skillInsertError } = await supabase
             .from('skills')
-            .upsert({ name: skillName, category: 'Technical' }, { onConflict: 'name' })
+            .insert({ name: skillName, category: 'Technology' })
             .select()
             .single();
 
-          if (skill) {
-            // Link skill to candidate
-            await supabase
-              .from('candidate_skills')
-              .insert({
-                candidate_id: candidate.id,
-                skill_id: skill.id,
-                proficiency_level: 4,
-                years_experience: Math.min(candidateInfo.experience_years, 5)
-              });
+          if (skillInsertError) {
+            console.error('Error creating skill:', skillName, skillInsertError);
+            continue;
           }
+          skillData = newSkillData;
+        }
+
+        // Link skill to candidate
+        const { error: linkError } = await supabase
+          .from('candidate_skills')
+          .insert({
+            candidate_id: candidateData.id,
+            skill_id: skillData.id,
+            proficiency_level: Math.floor(Math.random() * 3) + 3, // 3-5
+            years_experience: Math.floor(Math.random() * 5) + 1 // 1-5
+          });
+
+        if (linkError) {
+          console.error('Error linking skill to candidate:', linkError);
         }
       }
     }
 
+    console.log('Successfully populated 20 new candidates');
+
     return new Response(JSON.stringify({
       success: true,
-      message: `Successfully populated ${sampleCandidates.length} candidates`
+      message: 'Successfully populated 20 new candidates with skills'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -485,7 +672,7 @@ serve(async (req) => {
     console.error('Error in populate-candidates function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      success: false 
+      success: false
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
