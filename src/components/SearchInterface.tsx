@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Sparkles, SortDesc, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,12 @@ import { useCreateSearchQuery, useSearchQueries } from "@/hooks/useSearchQueries
 import { useNLPSearch } from "@/hooks/useNLPSearch";
 import { useToast } from "@/hooks/use-toast";
 
-const SearchInterface = () => {
+interface SearchInterfaceProps {
+  candidates: any[];
+  setCandidates: (candidates: any[]) => void;
+}
+
+const SearchInterface = ({ candidates, setCandidates }: SearchInterfaceProps) => {
   const [query, setQuery] = useState("");
   
   const { toast } = useToast();
@@ -34,6 +39,13 @@ const SearchInterface = () => {
       });
     }
   };
+
+  // Update candidates when search results change
+  useEffect(() => {
+    if (searchResults.length > 0) {
+      setCandidates(searchResults);
+    }
+  }, [searchResults, setCandidates]);
 
   const suggestedQueries = searchQueries?.slice(0, 4).map(sq => sq.query_text) || [
     "Find senior React developers with 5+ years experience",
@@ -121,21 +133,21 @@ const SearchInterface = () => {
       </Card>
 
       {/* Results */}
-      {searchResults.length > 0 && (
+      {candidates.length > 0 && (
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
                 <SortDesc className="w-5 h-5" />
                 <span>Search Results</span>
-                <Badge variant="secondary">{searchResults.length} candidates</Badge>
+                <Badge variant="secondary">{candidates.length} candidates</Badge>
               </CardTitle>
               <p className="text-sm text-gray-600">Ranked by AI relevance score</p>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {searchResults.map((candidate) => (
+              {candidates.map((candidate) => (
                 <div
                   key={candidate.id}
                   className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white"

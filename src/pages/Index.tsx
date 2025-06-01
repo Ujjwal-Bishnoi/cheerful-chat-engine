@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Upload, Users, MessageSquare, Zap, Shield, Target, LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
+  const [candidates, setCandidates] = useState([]);
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -116,7 +116,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section - Only show when no specific tab is active */}
-      {activeTab === "home" && (
+      {activeTab === "home" && candidates.length === 0 && (
         <section className="py-20 px-4">
           <div className="container mx-auto text-center">
             <div className="max-w-4xl mx-auto">
@@ -195,9 +195,11 @@ const Index = () => {
 
       {/* Main Content Area */}
       <main className="container mx-auto px-4 py-8">
-        {activeTab === "home" && <SearchInterface />}
+        {activeTab === "home" && (
+          <SearchInterface candidates={candidates} setCandidates={setCandidates} />
+        )}
         {activeTab === "upload" && <EnhancedResumeUpload />}
-        {activeTab === "candidates" && <CandidateResults candidates={[]} />}
+        {activeTab === "candidates" && <CandidateResults candidates={candidates} />}
         {activeTab === "outreach" && <OutreachTemplates />}
       </main>
 
