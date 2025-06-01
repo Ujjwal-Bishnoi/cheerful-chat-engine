@@ -6,3 +6,9 @@ verify_jwt = false
 
 [functions.search-candidates]
 verify_jwt = false
+
+[functions.populate-candidates]
+verify_jwt = false
+
+[functions.nlp-search]
+verify_jwt = false
