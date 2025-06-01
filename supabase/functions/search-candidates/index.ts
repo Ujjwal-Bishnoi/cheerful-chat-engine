@@ -11,8 +11,6 @@ const corsHeaders = {
 const supabaseUrl = 'https://ocmqqtgcadltakzuwixd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jbXFxdGdjYWRsdGFrenV3aXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2MjU0MjYsImV4cCI6MjA2NDIwMTQyNn0.u_L1ruz6-gE9q8uuH9bKAZzpUX2IqLoP5qmgTgSd_fQ';
 
-const groqApiKey = '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';
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -27,34 +25,31 @@ serve(async (req) => {
 
     console.log('Processing search query:', query);
 
-    // Use Groq API for query understanding and search
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // Use OpenAI API for query understanding and search
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.1-70b-versatile',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `You are an AI hiring assistant helping recruiters find candidates from a structured candidate database. Your task is to analyze the recruiter's plain-English query and convert it into search parameters for semantic matching.
+            content: `You are an AI hiring assistant helping recruiters find candidates from a structured candidate database. Your task is to analyze the recruiter's plain-English query and convert it into search parameters.
 
 Examples:
 Query: "Find senior RAG engineers in EU open to contracts"
-Output: {"keywords": ["RAG", "engineer", "senior"], "skills": ["RAG", "LangChain", "vector database"], "seniority": "senior", "location": ["EU", "Europe"], "experience_min": 5, "work_type": "contract"}
+Output: {"keywords": ["RAG", "engineer", "senior"], "skills": ["RAG", "LangChain"], "seniority": "senior", "location": ["EU", "Europe"], "experience_min": 5}
 
 Query: "Looking for GenAI researchers with PyTorch and RLHF experience in the US"
-Output: {"keywords": ["GenAI", "researcher", "PyTorch", "RLHF"], "skills": ["PyTorch", "RLHF", "GenAI", "machine learning"], "location": ["US", "United States"], "experience_min": 3}
+Output: {"keywords": ["GenAI", "researcher", "PyTorch", "RLHF"], "skills": ["PyTorch", "RLHF", "GenAI"], "location": ["US", "United States"], "experience_min": 3}
 
 Query: "Find Python developers with 3+ years experience"
 Output: {"keywords": ["Python", "developer"], "skills": ["Python"], "experience_min": 3}
 
-Query: "Show me candidates having experience in RAG"
-Output: {"keywords": ["RAG", "experience"], "skills": ["RAG", "LangChain", "vector search", "embeddings"], "experience_min": 1}
-
-Return only a JSON object with extracted search parameters. Include semantic variations of skills to improve matching.`
+Return only a JSON object with extracted search parameters.`
           },
           {
             role: 'user',
@@ -66,18 +61,18 @@ Return only a JSON object with extracted search parameters. Include semantic var
       }),
     });
 
-    if (!groqResponse.ok) {
-      console.error('Groq API error:', await groqResponse.text());
+    if (!openaiResponse.ok) {
+      console.error('OpenAI API error:', await openaiResponse.text());
       throw new Error('Failed to process query with AI');
     }
 
-    const groqData = await groqResponse.json();
+    const openaiData = await openaiResponse.json();
     let searchParams;
     
     try {
-      searchParams = JSON.parse(groqData.choices[0].message.content);
+      searchParams = JSON.parse(openaiData.choices[0].message.content);
     } catch (parseError) {
-      console.error('Failed to parse Groq response:', parseError);
+      console.error('Failed to parse OpenAI response:', parseError);
       // Fallback to simple keyword search
       searchParams = {
         keywords: query.toLowerCase().split(' ').filter(word => word.length > 2)
@@ -99,39 +94,23 @@ Return only a JSON object with extracted search parameters. Include semantic var
         )
       `);
 
-    // Build dynamic search query with OR conditions for better matching
+    // Build dynamic search query
     const searchConditions = [];
     
-    // Search in title, summary, name, work_experience, education
+    // Search in title, summary, name
     if (searchParams.keywords && searchParams.keywords.length > 0) {
-      const keywordConditions = [];
-      searchParams.keywords.forEach((keyword) => {
-        keywordConditions.push(`title.ilike.%${keyword}%`);
-        keywordConditions.push(`summary.ilike.%${keyword}%`);
-        keywordConditions.push(`name.ilike.%${keyword}%`);
-        keywordConditions.push(`work_experience.cs.${JSON.stringify([{description: keyword}])}`);
-        keywordConditions.push(`education.cs.${JSON.stringify([{field: keyword}])}`);
-      });
-      searchConditions.push(...keywordConditions);
-    }
-
-    // Enhanced skill search
-    if (searchParams.skills && searchParams.skills.length > 0) {
-      const skillConditions = [];
-      searchParams.skills.forEach((skill) => {
-        skillConditions.push(`title.ilike.%${skill}%`);
-        skillConditions.push(`summary.ilike.%${skill}%`);
-        skillConditions.push(`work_experience.cs.${JSON.stringify([{description: skill}])}`);
-      });
-      searchConditions.push(...skillConditions);
+      const keywordConditions = searchParams.keywords.map((keyword: string) => 
+        `title.ilike.%${keyword}%,summary.ilike.%${keyword}%,name.ilike.%${keyword}%`
+      ).join(',');
+      searchConditions.push(keywordConditions);
     }
 
     // Location search
     if (searchParams.location && searchParams.location.length > 0) {
-      const locationConditions = searchParams.location.map((loc) => 
+      const locationConditions = searchParams.location.map((loc: string) => 
         `location.ilike.%${loc}%`
-      );
-      searchConditions.push(...locationConditions);
+      ).join(',');
+      searchConditions.push(locationConditions);
     }
 
     // Experience filter
@@ -139,21 +118,12 @@ Return only a JSON object with extracted search parameters. Include semantic var
       candidatesQuery = candidatesQuery.gte('experience_years', searchParams.experience_min);
     }
 
-    // Availability filter
-    if (searchParams.work_type) {
-      if (searchParams.work_type.toLowerCase().includes('contract')) {
-        candidatesQuery = candidatesQuery.eq('availability', 'contract_only');
-      } else if (searchParams.work_type.toLowerCase().includes('full')) {
-        candidatesQuery = candidatesQuery.in('availability', ['actively_looking', 'open_to_offers']);
-      }
-    }
-
     // Apply OR conditions
     if (searchConditions.length > 0) {
       candidatesQuery = candidatesQuery.or(searchConditions.join(','));
     }
 
-    const { data: candidates, error: searchError } = await candidatesQuery.limit(50);
+    const { data: candidates, error: searchError } = await candidatesQuery.limit(20);
 
     if (searchError) {
       console.error('Search error:', searchError);
@@ -162,45 +132,33 @@ Return only a JSON object with extracted search parameters. Include semantic var
 
     // Transform the data to include skills array and calculate relevance score
     const transformedCandidates = candidates?.map(candidate => {
-      const skills = candidate.candidate_skills?.map((cs) => cs.skills?.name).filter(Boolean) || [];
+      const skills = candidate.candidate_skills?.map((cs: any) => cs.skills?.name).filter(Boolean) || [];
       
       // Calculate relevance score based on matches
       let score = 60; // Base score
       
-      // Skill matches (higher weight)
+      // Skill matches
       if (searchParams.skills) {
-        const skillMatches = searchParams.skills.filter((skill) => 
+        const skillMatches = searchParams.skills.filter((skill: string) => 
           skills.some(candidateSkill => 
             candidateSkill.toLowerCase().includes(skill.toLowerCase())
-          ) ||
-          candidate.title?.toLowerCase().includes(skill.toLowerCase()) ||
-          candidate.summary?.toLowerCase().includes(skill.toLowerCase())
+          )
         ).length;
-        score += skillMatches * 20;
+        score += skillMatches * 15;
       }
 
       // Experience bonus
       if (searchParams.experience_min && candidate.experience_years >= searchParams.experience_min) {
-        score += 15;
+        score += 10;
       }
 
-      // Keyword matches in title/summary/work experience
+      // Keyword matches in title/summary
       if (searchParams.keywords) {
         const titleSummaryText = `${candidate.title} ${candidate.summary}`.toLowerCase();
-        const workExperienceText = JSON.stringify(candidate.work_experience || []).toLowerCase();
-        const keywordMatches = searchParams.keywords.filter((keyword) => 
-          titleSummaryText.includes(keyword.toLowerCase()) ||
-          workExperienceText.includes(keyword.toLowerCase())
+        const keywordMatches = searchParams.keywords.filter((keyword: string) => 
+          titleSummaryText.includes(keyword.toLowerCase())
         ).length;
         score += keywordMatches * 10;
-      }
-
-      // Location bonus
-      if (searchParams.location && candidate.location) {
-        const locationMatches = searchParams.location.some(loc => 
-          candidate.location.toLowerCase().includes(loc.toLowerCase())
-        );
-        if (locationMatches) score += 10;
       }
 
       return {
@@ -210,18 +168,16 @@ Return only a JSON object with extracted search parameters. Include semantic var
       };
     }) || [];
 
-    // Sort by relevance score and filter for minimum relevance
-    const filteredCandidates = transformedCandidates
-      .filter(candidate => candidate.score >= 70) // Only show relevant matches
-      .sort((a, b) => b.score - a.score);
+    // Sort by relevance score
+    transformedCandidates.sort((a, b) => b.score - a.score);
 
-    const summary = `Found ${filteredCandidates.length} candidates matching "${query}". Results ranked by AI relevance score using Groq LLaMA.`;
+    const summary = `Found ${transformedCandidates.length} candidates matching "${query}". Results ranked by AI relevance score.`;
 
     return new Response(JSON.stringify({
       success: true,
-      candidates: filteredCandidates,
+      candidates: transformedCandidates,
       summary,
-      count: filteredCandidates.length
+      count: transformedCandidates.length
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

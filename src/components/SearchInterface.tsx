@@ -64,19 +64,13 @@ const SearchInterface = ({ candidates, setCandidates, setActiveTab, setSelectedC
   }, [searchResults, setCandidates]);
 
   // Get unique suggested queries
-  const baseSuggestions = [
+  const uniqueSuggestedQueries = Array.from(new Set([
+    ...searchQueries?.slice(0, 2).map(sq => sq.query_text) || [],
     "Find senior React developers with 5+ years experience",
     "Python engineers with machine learning background",
     "Remote-friendly full-stack developers",
-    "Engineering leads with startup experience",
-    "Show me candidates having experience in RAG",
-    "GenAI researchers with PyTorch experience",
-    "Frontend developers skilled in TypeScript"
-  ];
-
-  const recentQueries = searchQueries?.slice(0, 2).map(sq => sq.query_text) || [];
-  const allQueries = [...recentQueries, ...baseSuggestions];
-  const uniqueSuggestedQueries = Array.from(new Set(allQueries)).slice(0, 4);
+    "Engineering leads with startup experience"
+  ])).slice(0, 4);
 
   // Show candidate profile if one is selected
   if (selectedCandidate) {
@@ -196,17 +190,10 @@ const SearchInterface = ({ candidates, setCandidates, setActiveTab, setSelectedC
                   className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white"
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {candidate.name}
-                        </h3>
-                        {candidate.verified && (
-                          <Badge className="bg-green-600 text-xs">
-                            Verified {candidate.verification_score}%
-                          </Badge>
-                        )}
-                      </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {candidate.name}
+                      </h3>
                       <p className="text-blue-600 font-medium">{candidate.title}</p>
                       <p className="text-gray-600">{candidate.experience_years} years • {candidate.location}</p>
                     </div>
@@ -220,15 +207,7 @@ const SearchInterface = ({ candidates, setCandidates, setActiveTab, setSelectedC
                           {candidate.score}%
                         </Badge>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          candidate.availability === 'actively_looking' ? 'border-green-500 text-green-700' :
-                          candidate.availability === 'open_to_offers' ? 'border-blue-500 text-blue-700' :
-                          candidate.availability === 'contract_only' ? 'border-orange-500 text-orange-700' :
-                          'border-gray-500 text-gray-700'
-                        }`}
-                      >
+                      <Badge variant="outline" className="text-xs">
                         {candidate.availability?.replace('_', ' ')}
                       </Badge>
                     </div>
@@ -237,16 +216,11 @@ const SearchInterface = ({ candidates, setCandidates, setActiveTab, setSelectedC
                   <p className="text-gray-700 mb-4">{candidate.summary}</p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {candidate.skills?.slice(0, 6).map((skill, index) => (
+                    {candidate.skills?.map((skill: string, index: number) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {skill}
                       </Badge>
                     ))}
-                    {candidate.skills?.length > 6 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{candidate.skills.length - 6} more
-                      </Badge>
-                    )}
                   </div>
 
                   <div className="flex justify-between items-center pt-4 border-t">
