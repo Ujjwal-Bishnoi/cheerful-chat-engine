@@ -104,7 +104,7 @@ Return your response as a JSON object with this structure:
   "summary": "Brief explanation of the search and ranking criteria used"
 }`;
 
-    // Call Groq API
+    // Call Groq API with updated model
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -112,7 +112,7 @@ Return your response as a JSON object with this structure:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-70b-versatile',
+        model: 'llama3-70b-8192',
         messages: [
           {
             role: 'system',
